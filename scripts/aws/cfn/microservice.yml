@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Example microservice deploy'
+
+Transform:
+  - UpdateDeploymentTransform
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
+      experimental environments without crash official development environment'
+
+  KafkaOnBoardingTopicName:
+    Type: String
+    Description: 'Kafka topic name for onboarding institutions'
+    Default: 'sc-contracts'
+
+  KafkaOnBoardingGroupId:
+    Type: String
+    Description: 'Kafka group id for onboarding institutions'
+    Default: ''
+
+  KafkaOnBoardingBootstrapServers:
+    Type: String
+    Description: 'Kafka bootstrap servers'
+    Default: ''
+
+  SelfcarePnProductId:
+    Type: String
+    Description: 'Selfcare product id'
+
+Resources:
+
+  # PN-Kafka-Bridge microservice
+  KafkaBridgeMicroservice:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-KafkaBridge'
+        CpuValue: 1024
+        MemoryAmount: 2GB
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        ContainerImageURI: !Sub '${ContainerImageUri}'
+        ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
+        ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
+        ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_KAFKA_ONBOARDING_TOPIC_NAME=${KafkaOnBoardingTopicName}'
+        ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_KAFKA_ONBOARDING_GROUP_ID=${KafkaOnBoardingGroupId}'
+        ContainerEnvEntry5: !Sub 'SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=${KafkaOnBoardingBootstrapServers}'
+        ContainerEnvEntry6: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD={{resolve:secretsmanager:${ProjectName}-ExternalRegistries-Secrets:SecretString:KafkaOnBoardingSaslJaasConfig}}'
+        ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
+        MappedPaths: '/ext-registry/*,/ext-registry-private/*,/ext-registry-b2b/*'
+        ECSClusterName: !Ref ECSClusterName
+        Subnets: !Ref SubnetsIds
+        VpcId: !Ref VpcId
+        EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
+        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
+        LoadbalancerRulePriority: !Ref MicroserviceNumber
+        TaskRoleManagedPolicyArn: !Ref KafkaBridgeMicroserviceTaskManagedPolicy
+        AlbSecurityGroup: !Ref AlbSecurityGroup
+
+
+  KafkaBridgeMicroserviceTaskManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:ChangeMessageVisibility
+              - sqs:ChangeMessageVisibilityBatch
+              - sqs:DeleteMessage
+              - sqs:DeleteMessageBatch
+              - sqs:GetQueueAttributes
+              - sqs:GetQueueUrl
+              - sqs:ReceiveMessage
+              - sqs:SendMessage
+              - sqs:SendMessageBatch
+            Resource:
+              - !Ref DeliveryPushInputsQueueARN
+
+  ## Dashboard
+  KafkaBridgeMicroserviceCloudWatchDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-kafka-bridge"
+        DynamoDBTableNames: !Join 
+          - ',' 
+          - - !Ref OptInSentTableName
+            - !Ref OnboardInstitutionsTableName
+        RestApiStageArns: !Join
+          - ','
+          - - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiStageArn
+            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiStageArn
+        RestApiNames: !Join
+          - ','
+          - - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiName
+            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiName
+        AlarmArns: !Join
+          - ','
+          - - !GetAtt KafkaBridgeMicroservice.Outputs.FatalLogsMetricAlarmArn
+            - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiErrorAlarmArn
+            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiErrorAlarmArn
+            - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiLatencyAlarmArn
+            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiLatencyAlarmArn
+
+
+Outputs:
+  Version:
+    Description: Git commit id of this file
+    Value: !Ref Version
