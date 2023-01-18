@@ -27,7 +27,7 @@ public class OnboardingSelfCareMessageDeserializer implements Deserializer<Onboa
             log.trace("Deserializing from topic: {}...", topic);
             return objectMapper.readValue(data, OnboardingSelfCareMessage.class);
         } catch (Exception e) {
-            throw new SerializationException(String.format("Error when deserializing byte[] to OnBoardingSelfCareDTO with input: %s", new String(data)), e);
+            throw new SerializationException(String.format("Error when deserializing byte[] to OnboardingSelfCareMessage with input: %s", new String(data)), e);
         }
     }
 }
