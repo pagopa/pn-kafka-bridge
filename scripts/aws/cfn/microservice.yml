@@ -85,6 +85,18 @@ Parameters:
     Type: String
     Description: 'Keep track of used projects commitIds'
 
+  MicroserviceNumber:
+    Type: Number
+    Description: 'Disambiguation useful for load balancer rules'
+
+  ApplicationLoadBalancerListenerArn:
+    Type: String
+    Description: 'Load balancer listener where HTTP endpoints is going to be registered'
+
+  AlbSecurityGroup:
+    Type: String
+    Description: 'Application load balancer security group'
+
 Resources:
 
   # PN-Kafka-Bridge microservice
@@ -106,12 +118,17 @@ Resources:
         ContainerEnvEntry6: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD={{resolve:secretsmanager:${ProjectName}-KafkaBridge-Secrets:SecretString:KafkaOnboardingSaslJaasConfig}}'
         ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
         ContainerEnvEntry8: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
+        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
+        MappedPaths: '/kafka-bridge/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
+        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
+        LoadbalancerRulePriority: !Ref MicroserviceNumber
         TaskRoleManagedPolicyArn: !Ref KafkaBridgeMicroserviceTaskManagedPolicy
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        AlbSecurityGroup: !Ref AlbSecurityGroup
 
 
   KafkaBridgeMicroserviceTaskManagedPolicy:
