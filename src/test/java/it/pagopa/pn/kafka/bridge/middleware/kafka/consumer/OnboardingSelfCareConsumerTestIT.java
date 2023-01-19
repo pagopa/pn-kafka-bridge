@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 @SpringBootTest(properties = {
         "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092",
         "spring.kafka.consumer.auto-offset-reset=earliest",
-        "pn.external-registry.kafka-pagamenti-group-id=consumer-test",
+        "pn.kafka-bridge.onboarding-group-id=consumer-test",
         "spring.kafka.consumer.properties.security.protocol=PLAINTEXT"
 })
 @DirtiesContext

@@ -2,7 +2,7 @@
   "Parameters" : {
     "SelfcareUsergroupPnProductId": "prod-pn-dev",
     "KafkaOnboardingTopicName": "sc-contracts",
-    "KafkaOnboardingGroupId": "pn-external-registries-dev",
+    "KafkaOnboardingGroupId": "pn-kafka-bridge-dev",
     "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
     "SelfcarePnProductId": "prod-pn-dev"
   }
