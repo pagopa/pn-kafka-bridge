@@ -69,6 +69,10 @@ Parameters:
     Type: String
     Description: 'Kinesis stream that receive logs'
 
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: 'The S3 bucket from which to fetch the templates used by this stack.'
+
 Resources:
 
   # PN-Kafka-Bridge microservice
