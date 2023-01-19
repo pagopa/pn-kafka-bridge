@@ -10,17 +10,17 @@ Parameters:
     Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
       experimental environments without crash official development environment'
 
-  KafkaOnBoardingTopicName:
+  KafkaOnboardingTopicName:
     Type: String
     Description: 'Kafka topic name for onboarding institutions'
     Default: 'sc-contracts'
 
-  KafkaOnBoardingGroupId:
+  KafkaOnboardingGroupId:
     Type: String
     Description: 'Kafka group id for onboarding institutions'
     Default: ''
 
-  KafkaOnBoardingBootstrapServers:
+  KafkaOnboardingBootstrapServers:
     Type: String
     Description: 'Kafka bootstrap servers'
     Default: ''
@@ -28,6 +28,46 @@ Parameters:
   SelfcarePnProductId:
     Type: String
     Description: 'Selfcare product id'
+
+  KafkaBridgeOnboardingQueueName:
+    Type: String
+    Description: 'Queue name of Kafka bridge messages for onboarding institutes'
+
+  KafkaBridgeOnboardingQueueARN:
+    Type: String
+    Description: 'Queue ARN of Kafka bridge messages for onboarding institutes'
+
+  KafkaBridgeOnboardingQueueAlarmARN:
+    Type: String
+    Description: 'pn-kafka-bridge onboarding institutes queue alarm ARN'
+
+  KafkaBridgeOnboardingQueueAgeAlarmARN:
+    Type: String
+    Description: pn-kafka-bridge onboarding institute queue age alarm ARN
+
+  AlarmSNSTopicArn:
+    Type: String
+    Description: 'ARN of alarm topic'
+
+  ECSClusterName:
+    Type: String
+    Description: 'The name of the ECS cluster where the microservice is going to be deployed'
+
+  SubnetsIds:
+    Type: String
+    Description: 'subnets ids comma separated list. Where to deploy the microservice'
+
+  VpcId:
+    Type: String
+    Description: 'VpcId where the microservice is going to be deployed'
+
+  EcsDefaultSecurityGroup:
+    Type: String
+    Description: 'Default security group required by infrastructure'
+
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Kinesis stream that receive logs'
 
 Resources:
 
@@ -37,27 +77,25 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-KafkaBridge'
+        MicroServiceUniqueName: !Sub '${ProjectName}-kafka-bridge'
         CpuValue: 1024
         MemoryAmount: 2GB
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
-        ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_KAFKA_ONBOARDING_TOPIC_NAME=${KafkaOnBoardingTopicName}'
-        ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_KAFKA_ONBOARDING_GROUP_ID=${KafkaOnBoardingGroupId}'
-        ContainerEnvEntry5: !Sub 'SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=${KafkaOnBoardingBootstrapServers}'
-        ContainerEnvEntry6: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD={{resolve:secretsmanager:${ProjectName}-ExternalRegistries-Secrets:SecretString:KafkaOnBoardingSaslJaasConfig}}'
+        ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_KAFKA_ONBOARDING_TOPIC_NAME=${KafkaOnboardingTopicName}'
+        ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_KAFKA_ONBOARDING_GROUP_ID=${KafkaOnboardingGroupId}'
+        ContainerEnvEntry5: !Sub 'SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=${KafkaOnboardingBootstrapServers}'
+        ContainerEnvEntry6: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD={{resolve:secretsmanager:${ProjectName}-KafkaBridge-Secrets:SecretString:KafkaOnboardingSaslJaasConfig}}'
         ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
-        MappedPaths: '/ext-registry/*,/ext-registry-private/*,/ext-registry-b2b/*'
+        ContainerEnvEntry8: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
-        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
-        LoadbalancerRulePriority: !Ref MicroserviceNumber
         TaskRoleManagedPolicyArn: !Ref KafkaBridgeMicroserviceTaskManagedPolicy
-        AlbSecurityGroup: !Ref AlbSecurityGroup
+        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
 
 
   KafkaBridgeMicroserviceTaskManagedPolicy:
@@ -78,7 +116,7 @@ Resources:
               - sqs:SendMessage
               - sqs:SendMessageBatch
             Resource:
-              - !Ref DeliveryPushInputsQueueARN
+              - !Ref KafkaBridgeOnboardingQueueARN
 
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
@@ -87,25 +125,14 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
       Parameters:
         DashboardName: !Sub "${ProjectName}-kafka-bridge"
-        DynamoDBTableNames: !Join 
-          - ',' 
-          - - !Ref OptInSentTableName
-            - !Ref OnboardInstitutionsTableName
-        RestApiStageArns: !Join
-          - ','
-          - - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiStageArn
-            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiStageArn
-        RestApiNames: !Join
-          - ','
-          - - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiName
-            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiName
         AlarmArns: !Join
           - ','
           - - !GetAtt KafkaBridgeMicroservice.Outputs.FatalLogsMetricAlarmArn
-            - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiErrorAlarmArn
-            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiErrorAlarmArn
-            - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiLatencyAlarmArn
-            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiLatencyAlarmArn
+            - !Ref KafkaBridgeOnboardingQueueAlarmARN
+            - !Ref KafkaBridgeOnboardingQueueAgeAlarmARN
+        QueueArns: !Join
+          - ','
+          - - !Ref KafkaBridgeOnboardingQueueARN
 
 
 Outputs:
