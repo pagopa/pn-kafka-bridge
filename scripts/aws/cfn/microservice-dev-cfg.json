@@ -1,9 +1,9 @@
 {
   "Parameters" : {
     "SelfcareUsergroupPnProductId": "prod-pn-dev",
-    "KafkaOnBoardingTopicName": "sc-contracts",
-    "KafkaOnBoardingGroupId": "pn-external-registries-dev",
-    "KafkaOnBoardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
+    "KafkaOnboardingTopicName": "sc-contracts",
+    "KafkaOnboardingGroupId": "pn-external-registries-dev",
+    "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
     "SelfcarePnProductId": "prod-pn-dev"
   }
 }
