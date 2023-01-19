@@ -81,6 +81,10 @@ Parameters:
     Type: String
     Description: 'Comma separated list of domains allowed to make cross origin request'
 
+  Version:
+    Type: String
+    Description: 'Keep track of used projects commitIds'
+
 Resources:
 
   # PN-Kafka-Bridge microservice
