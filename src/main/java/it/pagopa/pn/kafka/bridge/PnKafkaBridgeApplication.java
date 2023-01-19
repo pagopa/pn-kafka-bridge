@@ -11,5 +11,4 @@ public class PnKafkaBridgeApplication {
 		SpringApplication.run(PnKafkaBridgeApplication.class, args);
 	}
 
-
 }
