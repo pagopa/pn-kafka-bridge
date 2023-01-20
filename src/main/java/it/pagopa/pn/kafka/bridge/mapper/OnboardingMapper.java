@@ -18,7 +18,7 @@ public class OnboardingMapper {
         entity.setAddress(onBoardingSelfCareMessage.getInstitution().getAddress());
         entity.setDigitalAddress(onBoardingSelfCareMessage.getInstitution().getDigitalAddress());
         entity.setDescription(onBoardingSelfCareMessage.getInstitution().getDescription());
-        entity.setPk(onBoardingSelfCareMessage.getInternalIstitutionID());
+        entity.setId(onBoardingSelfCareMessage.getInternalIstitutionID());
         entity.setExternalId(onBoardingSelfCareMessage.getOnboardingTokenId());
         return entity;
     }
