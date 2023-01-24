@@ -100,7 +100,6 @@ Parameters:
   KafkaSecretArn:
     Type: String
     Description: 'ARN of kafka bridge secrets'
-    Default: ''
 
 Resources:
 

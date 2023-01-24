@@ -4,6 +4,6 @@
     "KafkaOnboardingGroupId": "pn-kafka-bridge-svil",
     "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
     "SelfcarePnProductId": "prod-pn-svil",
-    "KafkaOnboardingSaslJaasConfigSecretArn": "arn:aws:secretsmanager:eu-south-1:558518206506:secret:pn-KafkaBridge-Secrets-yKTOYp:KafkaOnboardingSaslJaasConfig:AWSCURRENT:"
+    "KafkaSecretArn": "arn:aws:secretsmanager:eu-south-1:748275689270:secret:pn-KafkaBridge-Secrets-inph4u"
   }
 }
