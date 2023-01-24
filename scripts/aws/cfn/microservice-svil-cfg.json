@@ -1,6 +1,5 @@
 {
   "Parameters" : {
-    "SelfcareUsergroupPnProductId": "prod-pn-svil",
     "KafkaOnboardingTopicName": "sc-contracts",
     "KafkaOnboardingGroupId": "pn-kafka-bridge-svil",
     "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
