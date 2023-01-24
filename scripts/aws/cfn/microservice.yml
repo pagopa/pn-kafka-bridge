@@ -122,6 +122,7 @@ Resources:
         ContainerEnvEntry6: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
         ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=${KafkaSecretArn}:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
+        MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/kafka-bridge/*'
         ECSClusterName: !Ref ECSClusterName
