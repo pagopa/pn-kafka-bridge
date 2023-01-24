@@ -97,6 +97,11 @@ Parameters:
     Type: String
     Description: 'Application load balancer security group'
 
+  KafkaSecretArn:
+    Type: String
+    Description: 'ARN of kafka bridge secrets'
+    Default: ''
+
 Resources:
 
   # PN-Kafka-Bridge microservice
@@ -115,9 +120,9 @@ Resources:
         ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_TOPIC_NAME=${KafkaOnboardingTopicName}'
         ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_GROUP_ID=${KafkaOnboardingGroupId}'
         ContainerEnvEntry5: !Sub 'SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=${KafkaOnboardingBootstrapServers}'
-        ContainerEnvEntry6: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD={{resolve:secretsmanager:${ProjectName}-KafkaBridge-Secrets:SecretString:KafkaOnboardingSaslJaasConfig}}'
-        ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
-        ContainerEnvEntry8: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
+        ContainerEnvEntry6: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
+        ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
+        ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=${KafkaSecretArn}:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
         MappedPaths: '/kafka-bridge/*'
         ECSClusterName: !Ref ECSClusterName
