@@ -3,7 +3,6 @@
     "KafkaOnboardingTopicName": "sc-contracts",
     "KafkaOnboardingGroupId": "pn-kafka-bridge-dev",
     "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
-    "SelfcarePnProductId": "prod-pn-dev",
-    "KafkaSecretArn": "arn:aws:secretsmanager:eu-south-1:558518206506:secret:pn-KafkaBridge-Secrets-yKTOYp"
+    "SelfcarePnProductId": "prod-pn-dev"
   }
 }

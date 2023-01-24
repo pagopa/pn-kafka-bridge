@@ -97,10 +97,6 @@ Parameters:
     Type: String
     Description: 'Application load balancer security group'
 
-  KafkaSecretArn:
-    Type: String
-    Description: 'ARN of kafka bridge secrets'
-
 Resources:
 
   # PN-Kafka-Bridge microservice
