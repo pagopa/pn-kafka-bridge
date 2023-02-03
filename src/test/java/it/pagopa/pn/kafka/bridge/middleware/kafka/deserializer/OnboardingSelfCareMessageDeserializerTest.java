@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.time.Instant;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -53,7 +54,7 @@ class OnboardingSelfCareMessageDeserializerTest {
         byte[] bytes = "prova".getBytes();
         OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
         assertThat(actual).isNull();
-        ExpectedLoggingAssertions.assertThat(logging).warningMessages();
+        ExpectedLoggingAssertions.assertThat(logging).hasWarningMessageMatching(Pattern.compile("Error when deserializing.*").pattern());
     }
 
     @Test
