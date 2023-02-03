@@ -1,16 +1,20 @@
 package it.pagopa.pn.kafka.bridge.middleware.kafka.deserializer;
 
+import de.neuland.assertj.logging.ExpectedLogging;
+import de.neuland.assertj.logging.ExpectedLoggingAssertions;
 import it.pagopa.pn.kafka.bridge.model.OnboardingSelfCareMessage;
-import org.apache.kafka.common.errors.SerializationException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.time.Instant;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class OnboardingSelfCareMessageDeserializerTest {
+
+    @RegisterExtension
+    private final ExpectedLogging logging = ExpectedLogging.forSource(OnboardingSelfCareMessageDeserializer.class);
 
 
     private OnboardingSelfCareMessageDeserializer deserializer;
@@ -45,12 +49,29 @@ class OnboardingSelfCareMessageDeserializerTest {
     }
 
     @Test
-    void deserializeThrowsExceptionTest() {
+    void deserializeInvalidJsonTest() {
         byte[] bytes = "prova".getBytes();
-        Assertions.assertThrows(
-                SerializationException.class,
-                () -> deserializer.deserialize("topic", bytes)
-        );
+        OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
+        assertThat(actual).isNull();
+        ExpectedLoggingAssertions.assertThat(logging).warningMessages();
+    }
+
+    @Test
+    void deserializeWithAdditionFieldForNonPNProductTest() {
+        byte[] bytes = inputRequestWithAdditionalFieldNonPN().getBytes();
+        OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
+        assertThat(actual).isNull();
+        ExpectedLoggingAssertions.assertThat(logging).hasWarningMessage("Error when deserializing byte[] to OnboardingSelfCareMessage with input: " + new String(bytes));
+        ExpectedLoggingAssertions.assertThat(logging).hasNoErrorMessage();
+    }
+
+    @Test
+    void deserializeWithAdditionFieldForPNProductTest() {
+        byte[] bytes = inputRequestWithAdditionalFieldPN().getBytes();
+        OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
+        assertThat(actual).isNull();
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("Error when deserializing byte[] to OnboardingSelfCareMessage with input: " + new String(bytes));
+        ExpectedLoggingAssertions.assertThat(logging).hasNoWarningMessage();
     }
 
 
@@ -79,6 +100,68 @@ class OnboardingSelfCareMessageDeserializerTest {
                    "product":"prod-io",
                    "state":"ACTIVE",
                    "updatedAt":"2023-01-10T15:20:38.94Z"
+                }
+                """;
+    }
+
+    private String inputRequestWithAdditionalFieldNonPN() {
+        return """
+                {
+                  "billing":{
+                    "recipientCode":"new ",
+                    "vatNumber":"00121930789"
+                  },
+                  "contentType":"application/octet-stream",
+                  "fileName":"App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
+                  "filePath":"parties/docs/7cefb0b9-9296-4025-a7a4-0874cd732f32/App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
+                  "id":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
+                  "institution":{
+                    "address":"Via rossi,194",
+                    "description":"prova onboarding ",
+                    "digitalAddress":"pectest@pec.test.it",
+                    "institutionType":"GSP",
+                    "origin":"SELC",
+                    "originId":"GSP_00121930789",
+                    "taxCode":"00121930789"
+                  },
+                  "internalIstitutionID":"10189036-35fe-4c03-bc27-d8d14d22a02e",
+                  "onboardingTokenId":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
+                  "pricingPlan":"C1",
+                  "product":"prod-io-premium",
+                  "state":"ACTIVE",
+                  "updatedAt":"2023-02-02T14:13:28.816Z",
+                  "additionField: "additionValue"
+                }
+                """;
+    }
+
+    private String inputRequestWithAdditionalFieldPN() {
+        return """
+                {
+                  "billing":{
+                    "recipientCode":"new ",
+                    "vatNumber":"00121930789"
+                  },
+                  "contentType":"application/octet-stream",
+                  "fileName":"App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
+                  "filePath":"parties/docs/7cefb0b9-9296-4025-a7a4-0874cd732f32/App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
+                  "id":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
+                  "institution":{
+                    "address":"Via rossi,194",
+                    "description":"prova onboarding ",
+                    "digitalAddress":"pectest@pec.test.it",
+                    "institutionType":"GSP",
+                    "origin":"SELC",
+                    "originId":"GSP_00121930789",
+                    "taxCode":"00121930789"
+                  },
+                  "internalIstitutionID":"10189036-35fe-4c03-bc27-d8d14d22a02e",
+                  "onboardingTokenId":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
+                  "pricingPlan":"C1",
+                  "product":"prod-pn-dev",
+                  "state":"ACTIVE",
+                  "updatedAt":"2023-02-02T14:13:28.816Z",
+                  "additionField: "additionValue"
                 }
                 """;
     }
