@@ -34,7 +34,7 @@ public class OnboardingSelfCareMessageDeserializer implements Deserializer<Onboa
         }
     }
 
-    //logghiamo ad error solo se il product è product-pn-<ENV>
+    //logghiamo ad error solo se il product è prod-pn-<ENV>
     private void logException(byte[] data, Exception e) {
         String jsonString = new String(data);
         boolean isPnProduct = PROD_PN_PATTERN.matcher(jsonString).find();
