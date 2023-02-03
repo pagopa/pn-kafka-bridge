@@ -18,11 +18,13 @@ public class OnboardingSelfCareMessage {
     private String product;
     private String state;
     private Instant updatedAt;
+    private String pricingPlan;
 
     @Data
     public static class Billing {
         private String recipientCode;
         private String vatNumber;
+        private Boolean publicServices;
     }
 
     @Data

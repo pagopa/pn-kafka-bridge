@@ -58,6 +58,19 @@ class OnboardingSelfCareConsumerTestIT {
 
     }
 
+    @Test
+    void listenKOForDiscardedTest() throws ExecutionException, InterruptedException {
+
+        String inputRequest = inputRequestFormSelfCareWithAdditionField();
+
+        //scrivo su Kafka una Request presa dal flusso reale di SelfCare
+        kafkaTemplate.send("sc-contracts", inputRequest).get();
+
+        //verifico che il messaggio non venga ricevuto dal consumer perché scartato dal filter
+        Mockito.verify(consumer, Mockito.timeout(1000).times(0)).listen(Mockito.any(String.class), Mockito.any(OnboardingSelfCareMessage.class));
+
+    }
+
     private String inputRequestFormSelfCare() {
         return """
                 {
@@ -80,9 +93,39 @@ class OnboardingSelfCareConsumerTestIT {
                    },
                    "internalIstitutionID":"7861b02d-8cb4-4de9-95d2-5ed02f3de38a",
                    "onboardingTokenId":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
-                   "product":"prod-io",
+                   "product":"prod-pn-dev",
                    "state":"ACTIVE",
                    "updatedAt":"2023-01-10T15:20:38.94Z"
+                }
+                """;
+    }
+
+    private String inputRequestFormSelfCareWithAdditionField() {
+        return """
+                {
+                   "billing":{
+                      "recipientCode":"bc_0432",
+                      "vatNumber":"00338460090"
+                   },
+                   "contentType":"application/octet-stream",
+                   "fileName":"App IO_accordo_adesione.pdf7419256794741715935.pdf",
+                   "filePath":"parties/docs/7014954b-5a2f-4aed-9f26-b2b778c2a120/App IO_accordo_adesione.pdf7419256794741715935.pdf",
+                   "id":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
+                   "institution":{
+                      "address":"Piazza Umberto I, 1",
+                      "description":"Comune di Tovo San Giacomo",
+                      "digitalAddress":"protocollo@comunetovosangiacomo.it",
+                      "institutionType":"PA",
+                      "origin":"IPA",
+                      "originId":"c_l315",
+                      "taxCode":"00338460090"
+                   },
+                   "internalIstitutionID":"7861b02d-8cb4-4de9-95d2-5ed02f3de38a",
+                   "onboardingTokenId":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
+                   "product":"prod-pn-dev",
+                   "state":"ACTIVE",
+                   "updatedAt":"2023-01-10T15:20:38.94Z",
+                   "additionField": "aValue"
                 }
                 """;
     }
