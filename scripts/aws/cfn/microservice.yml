@@ -254,6 +254,9 @@ Resources:
         QueueArns: !Join
           - ','
           - - !Ref KafkaBridgeOnboardingQueueARN
+        LogGroupsNames: !Join
+          - ','
+          - - !Sub '/ecs/${ProjectName}-kafka-bridge'
 
 
 Outputs:
