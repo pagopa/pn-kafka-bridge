@@ -59,15 +59,17 @@ class OnboardingSelfCareConsumerTestIT {
     }
 
     @Test
-    void listenKOForDiscardedTest() throws ExecutionException, InterruptedException {
+    void listenNotReceivedMessageForFiltering() throws ExecutionException, InterruptedException, JsonProcessingException {
 
-        String inputRequest = inputRequestFormSelfCareWithAdditionField();
+        String inputRequest = inputRequestFormSelfCareWithNotPNProduct();
 
         //scrivo su Kafka una Request presa dal flusso reale di SelfCare
         kafkaTemplate.send("sc-contracts", inputRequest).get();
 
+        OnboardingSelfCareMessage expectedValue = objectMapper.readValue(inputRequest, OnboardingSelfCareMessage.class);
+
         //verifico che il messaggio non venga ricevuto dal consumer perché scartato dal filter
-        Mockito.verify(consumer, Mockito.timeout(1000).times(0)).listen(Mockito.any(String.class), Mockito.any(OnboardingSelfCareMessage.class));
+        Mockito.verify(consumer, Mockito.timeout(1000).times(0)).listen("sc-contracts", expectedValue);
 
     }
 
@@ -100,7 +102,7 @@ class OnboardingSelfCareConsumerTestIT {
                 """;
     }
 
-    private String inputRequestFormSelfCareWithAdditionField() {
+    private String inputRequestFormSelfCareWithNotPNProduct() {
         return """
                 {
                    "billing":{
@@ -122,10 +124,9 @@ class OnboardingSelfCareConsumerTestIT {
                    },
                    "internalIstitutionID":"7861b02d-8cb4-4de9-95d2-5ed02f3de38a",
                    "onboardingTokenId":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
-                   "product":"prod-pn-dev",
+                   "product":"prod-io-dev",
                    "state":"ACTIVE",
-                   "updatedAt":"2023-01-10T15:20:38.94Z",
-                   "additionField": "aValue"
+                   "updatedAt":"2023-01-10T15:20:38.94Z"
                 }
                 """;
     }

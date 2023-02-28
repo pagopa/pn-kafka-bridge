@@ -49,30 +49,44 @@ class OnboardingSelfCareMessageDeserializerTest {
 
     }
 
+    // se in input non arriva un JSON, e quindi va in eccezione il Deserializer, devo avere un log di ERROR
     @Test
     void deserializeInvalidJsonTest() {
         byte[] bytes = "prova".getBytes();
         OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
         assertThat(actual).isNull();
-        ExpectedLoggingAssertions.assertThat(logging).hasWarningMessageMatching(Pattern.compile("Error when deserializing.*").pattern());
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(Pattern.compile("Error when deserializing.*").pattern());
     }
 
-    @Test
-    void deserializeWithAdditionFieldForNonPNProductTest() {
-        byte[] bytes = inputRequestWithAdditionalFieldNonPN().getBytes();
-        OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
-        assertThat(actual).isNull();
-        ExpectedLoggingAssertions.assertThat(logging).hasWarningMessage("Error when deserializing byte[] to OnboardingSelfCareMessage with input: " + new String(bytes));
-        ExpectedLoggingAssertions.assertThat(logging).hasNoErrorMessage();
-    }
 
+
+    // se in input arriva un JSON con un campo non previsto in OnboardingSelfCareMessage,
+    // devo avere un log di WARN ma la de-serializzazione non deve andare in errore
     @Test
     void deserializeWithAdditionFieldForPNProductTest() {
         byte[] bytes = inputRequestWithAdditionalFieldPN().getBytes();
         OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
-        assertThat(actual).isNull();
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("Error when deserializing byte[] to OnboardingSelfCareMessage with input: " + new String(bytes));
-        ExpectedLoggingAssertions.assertThat(logging).hasNoWarningMessage();
+        assertThat(actual).isNotNull();
+        assertThat(actual.getInternalIstitutionID()).isEqualTo("10189036-35fe-4c03-bc27-d8d14d22a02e");
+        assertThat(actual.getState()).isEqualTo("ACTIVE");
+        assertThat(actual.getUpdatedAt()).isEqualTo(Instant.parse("2023-02-02T14:13:28.816Z"));
+        assertThat(actual.getInstitution().getAddress()).isEqualTo("Via rossi,194");
+        assertThat(actual.getInstitution().getDigitalAddress()).isEqualTo("pectest@pec.test.it");
+        assertThat(actual.getInstitution().getTaxCode()).isEqualTo("00121930789");
+        assertThat(actual.getInstitution().getDescription()).isEqualTo("prova onboarding ");
+
+        ExpectedLoggingAssertions.assertThat(logging).hasWarningMessage("Unknown property additionField encountered while deserialization JSON with value: \"additionValue\"");
+    }
+
+    // se il DTO OnboardingSelfCareMessage contiene più campi rispetto al JSON che arriva, questo non crea problemi
+    // al deserializzatore, che deserializza solo i campi presenti nel JSON
+    @Test
+    void deserializeWithLessFields() {
+        byte[] bytes = inputRequestWithSmallJson().getBytes();
+        OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
+        assertThat(actual).isNotNull();
+        assertThat(actual.getInternalIstitutionID()).isEqualTo("10189036-35fe-4c03-bc27-d8d14d22a02e");
+        assertThat(actual.getState()).isEqualTo("ACTIVE");
     }
 
 
@@ -105,37 +119,6 @@ class OnboardingSelfCareMessageDeserializerTest {
                 """;
     }
 
-    private String inputRequestWithAdditionalFieldNonPN() {
-        return """
-                {
-                  "billing":{
-                    "recipientCode":"new ",
-                    "vatNumber":"00121930789"
-                  },
-                  "contentType":"application/octet-stream",
-                  "fileName":"App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
-                  "filePath":"parties/docs/7cefb0b9-9296-4025-a7a4-0874cd732f32/App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
-                  "id":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
-                  "institution":{
-                    "address":"Via rossi,194",
-                    "description":"prova onboarding ",
-                    "digitalAddress":"pectest@pec.test.it",
-                    "institutionType":"GSP",
-                    "origin":"SELC",
-                    "originId":"GSP_00121930789",
-                    "taxCode":"00121930789"
-                  },
-                  "internalIstitutionID":"10189036-35fe-4c03-bc27-d8d14d22a02e",
-                  "onboardingTokenId":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
-                  "pricingPlan":"C1",
-                  "product":"prod-io-premium",
-                  "state":"ACTIVE",
-                  "updatedAt":"2023-02-02T14:13:28.816Z",
-                  "additionField: "additionValue"
-                }
-                """;
-    }
-
     private String inputRequestWithAdditionalFieldPN() {
         return """
                 {
@@ -162,7 +145,20 @@ class OnboardingSelfCareMessageDeserializerTest {
                   "product":"prod-pn-dev",
                   "state":"ACTIVE",
                   "updatedAt":"2023-02-02T14:13:28.816Z",
-                  "additionField: "additionValue"
+                  "additionField": "additionValue"
+                }
+                """;
+    }
+
+    private String inputRequestWithSmallJson() {
+        return """
+                {
+                  "billing":{
+                    "recipientCode":"new ",
+                    "vatNumber":"00121930789"
+                  },
+                  "internalIstitutionID":"10189036-35fe-4c03-bc27-d8d14d22a02e",
+                  "state":"ACTIVE"
                 }
                 """;
     }

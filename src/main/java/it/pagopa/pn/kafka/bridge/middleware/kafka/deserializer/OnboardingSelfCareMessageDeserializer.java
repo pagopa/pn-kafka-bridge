@@ -1,22 +1,37 @@
 package it.pagopa.pn.kafka.bridge.middleware.kafka.deserializer;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.pn.kafka.bridge.model.OnboardingSelfCareMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import java.util.regex.Pattern;
+import java.io.IOException;
 
 @Slf4j
 public class OnboardingSelfCareMessageDeserializer implements Deserializer<OnboardingSelfCareMessage> {
 
-    private static final Pattern PROD_PN_PATTERN = Pattern.compile("product\" ?: ?\"prod-pn-");
     private final ObjectMapper objectMapper;
 
     public OnboardingSelfCareMessageDeserializer() {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        objectMapper.addHandler(new DeserializationProblemHandler() {
+            @Override
+            public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer,
+                                                 Object beanOrClass, String propertyName) throws IOException {
+
+                log.warn("Unknown property {} encountered while deserialization JSON with value: {}", propertyName, p.readValueAsTree());
+                return true;
+            }
+        });
     }
 
     @Override
@@ -29,21 +44,10 @@ public class OnboardingSelfCareMessageDeserializer implements Deserializer<Onboa
             log.trace("Deserializing from topic: {}...", topic);
             return objectMapper.readValue(data, OnboardingSelfCareMessage.class);
         } catch (Exception e) {
-            logException(data, e);
+            log.error("Error when deserializing byte[] to OnboardingSelfCareMessage", e);
             return null; //il filtro scarta sia i null che i product non PN
         }
     }
 
-    //logghiamo ad error solo se il product è prod-pn-<ENV>
-    private void logException(byte[] data, Exception e) {
-        String jsonString = new String(data);
-        boolean isPnProduct = PROD_PN_PATTERN.matcher(jsonString).find();
-        if(isPnProduct) {
-            log.error(String.format("Error when deserializing byte[] to OnboardingSelfCareMessage with input: %s", jsonString), e);
-        }
-        else {
-            log.warn(String.format("Error when deserializing byte[] to OnboardingSelfCareMessage with input: %s", jsonString), e);
-        }
-    }
 
 }
