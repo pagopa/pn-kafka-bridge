@@ -27,7 +27,6 @@ Parameters:
 Conditions:
   Never: !Equals [ 'true', 'false' ]
 
-# dummy (null) resource, never created
 Resources:
   PnKafkaBridgeLogGroup:
     Type: AWS::CloudFormation::Stack
