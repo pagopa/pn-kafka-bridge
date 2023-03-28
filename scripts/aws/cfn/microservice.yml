@@ -65,10 +65,6 @@ Parameters:
     Type: String
     Description: 'Default security group required by infrastructure'
 
-  LogsKinesisSourceStreamArn:
-    Type: String
-    Description: 'Kinesis stream that receive logs'
-
   TemplateBucketBaseUrl:
     Type: String
     Description: 'The S3 bucket from which to fetch the templates used by this stack.'
@@ -96,6 +92,11 @@ Parameters:
   AlbSecurityGroup:
     Type: String
     Description: 'Application load balancer security group'
+
+  # Log group parameters
+  EcsLogGroup:
+    Type: String
+    Description: 'Ecs log group name'
 
   # Heath Check parameters
   HealthCheckInterval:
@@ -215,9 +216,8 @@ Resources:
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         TaskRoleManagedPolicyArn: !Ref KafkaBridgeMicroserviceTaskManagedPolicy
-        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
         AlbSecurityGroup: !Ref AlbSecurityGroup
-
+        EcsLogGroup: !Ref EcsLogGroup
 
   KafkaBridgeMicroserviceTaskManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -256,7 +256,7 @@ Resources:
           - - !Ref KafkaBridgeOnboardingQueueARN
         LogGroupsNames: !Join
           - ','
-          - - !Sub '/ecs/${ProjectName}-kafka-bridge'
+          - - !Sub '/aws/ecs/${ProjectName}-kafka-bridge'
 
 
 Outputs:
