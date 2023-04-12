@@ -11,6 +11,7 @@ public class OnboardingMapper {
     public PnOnboardInstitutionPayload toPnOnboardInstitutionPayload(OnboardingSelfCareMessage onBoardingSelfCareMessage) {
         PnOnboardInstitutionPayload entity = new PnOnboardInstitutionPayload();
         entity.setStatus(onBoardingSelfCareMessage.getState());
+        entity.setCreated(onBoardingSelfCareMessage.getCreatedAt());
         entity.setLastUpdate(onBoardingSelfCareMessage.getUpdatedAt());
         entity.setTaxCode(onBoardingSelfCareMessage.getInstitution().getTaxCode());
         entity.setAddress(onBoardingSelfCareMessage.getInstitution().getAddress());
@@ -18,6 +19,7 @@ public class OnboardingMapper {
         entity.setDescription(onBoardingSelfCareMessage.getInstitution().getDescription());
         entity.setId(onBoardingSelfCareMessage.getInternalIstitutionID());
         entity.setExternalId(onBoardingSelfCareMessage.getOnboardingTokenId());
+        entity.setZipCode(onBoardingSelfCareMessage.getZipCode());
         return entity;
     }
 }

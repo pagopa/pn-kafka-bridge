@@ -40,6 +40,8 @@ class OnboardingSelfCareMessageDeserializerTest {
         assertThat(actual.getInstitution().getDigitalAddress()).isEqualTo("protocollo@comunetovosangiacomo.it");
         assertThat(actual.getInstitution().getTaxCode()).isEqualTo("00338460090");
         assertThat(actual.getInstitution().getDescription()).isEqualTo("Comune di Tovo San Giacomo");
+        assertThat(actual.getCreatedAt()).isEqualTo(Instant.parse("2023-01-05T13:41:30.621Z"));
+        assertThat(actual.getZipCode()).isEqualTo("02045");
     }
 
     @Test
@@ -114,7 +116,9 @@ class OnboardingSelfCareMessageDeserializerTest {
                    "onboardingTokenId":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
                    "product":"prod-io",
                    "state":"ACTIVE",
-                   "updatedAt":"2023-01-10T15:20:38.94Z"
+                   "updatedAt":"2023-01-10T15:20:38.94Z",
+                   "createdAt":"2023-01-05T13:41:30.621Z",
+                   "zipCode":"02045"
                 }
                 """;
     }
@@ -145,6 +149,8 @@ class OnboardingSelfCareMessageDeserializerTest {
                   "product":"prod-pn-dev",
                   "state":"ACTIVE",
                   "updatedAt":"2023-02-02T14:13:28.816Z",
+                  "createdAt":"2023-01-05T13:41:30.621Z",
+                  "zipCode":"02045",
                   "additionField": "additionValue"
                 }
                 """;

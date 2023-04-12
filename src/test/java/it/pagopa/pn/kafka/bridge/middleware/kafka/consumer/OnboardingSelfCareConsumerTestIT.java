@@ -97,7 +97,9 @@ class OnboardingSelfCareConsumerTestIT {
                    "onboardingTokenId":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
                    "product":"prod-pn-dev",
                    "state":"ACTIVE",
-                   "updatedAt":"2023-01-10T15:20:38.94Z"
+                   "updatedAt":"2023-01-10T15:20:38.94Z",
+                   "createdAt":"2023-01-05T13:41:30.621Z",
+                   "zipCode":"02045"
                 }
                 """;
     }
@@ -126,7 +128,9 @@ class OnboardingSelfCareConsumerTestIT {
                    "onboardingTokenId":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
                    "product":"prod-io-dev",
                    "state":"ACTIVE",
-                   "updatedAt":"2023-01-10T15:20:38.94Z"
+                   "updatedAt":"2023-01-10T15:20:38.94Z",
+                   "createdAt":"2023-01-05T13:41:30.621Z",
+                   "zipCode":"02045"
                 }
                 """;
     }
