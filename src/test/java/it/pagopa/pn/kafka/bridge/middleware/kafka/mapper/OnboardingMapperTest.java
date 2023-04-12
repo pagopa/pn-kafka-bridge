@@ -27,6 +27,8 @@ class OnboardingMapperTest {
         assertThat(actual.getAddress()).isEqualTo(inputMessage.getInstitution().getAddress());
         assertThat(actual.getDigitalAddress()).isEqualTo(inputMessage.getInstitution().getDigitalAddress());
         assertThat(actual.getExternalId()).isEqualTo(inputMessage.getOnboardingTokenId());
+        assertThat(actual.getCreated()).isEqualTo(inputMessage.getCreatedAt());
+        assertThat(actual.getZipCode()).isEqualTo(inputMessage.getZipCode());
     }
 
     private OnboardingSelfCareMessage createInputMessage() {
@@ -47,6 +49,8 @@ class OnboardingMapperTest {
         inputMessage.setInternalIstitutionID("8861b02d-8cb4-4de9-95d2-5ed02f3de38a");
         inputMessage.setState("ACTIVE");
         inputMessage.setUpdatedAt(Instant.parse("2023-01-10T15:20:38.94Z"));
+        inputMessage.setCreatedAt(Instant.parse("2023-01-05T13:41:30.621Z"));
+        inputMessage.setZipCode("02045");
 
         return inputMessage;
     }
