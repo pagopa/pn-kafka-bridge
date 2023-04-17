@@ -44,7 +44,7 @@ public class OnboardingSelfCareMessageDeserializer implements Deserializer<Onboa
             log.trace("Deserializing from topic: {}...", topic);
             return objectMapper.readValue(data, OnboardingSelfCareMessage.class);
         } catch (Exception e) {
-            log.error("Error when deserializing byte[] to OnboardingSelfCareMessage", e);
+            log.warn("Error when deserializing byte[] to OnboardingSelfCareMessage", e);
             return null; //il filtro scarta sia i null che i product non PN
         }
     }

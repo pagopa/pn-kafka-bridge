@@ -42,6 +42,9 @@ class OnboardingSelfCareMessageDeserializerTest {
         assertThat(actual.getInstitution().getDescription()).isEqualTo("Comune di Tovo San Giacomo");
         assertThat(actual.getCreatedAt()).isEqualTo(Instant.parse("2023-01-05T13:41:30.621Z"));
         assertThat(actual.getZipCode()).isEqualTo("02045");
+        assertThat(actual.getBilling().getVatNumber()).isEqualTo("00338460090");
+        assertThat(actual.getBilling().getRecipientCode()).isEqualTo("bc_0432");
+        assertThat(actual.getInstitution().getOriginId()).isEqualTo("c_l315");
     }
 
     @Test
@@ -57,7 +60,7 @@ class OnboardingSelfCareMessageDeserializerTest {
         byte[] bytes = "prova".getBytes();
         OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
         assertThat(actual).isNull();
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(Pattern.compile("Error when deserializing.*").pattern());
+        ExpectedLoggingAssertions.assertThat(logging).hasWarningMessageMatching(Pattern.compile("Error when deserializing.*").pattern());
     }
 
 
@@ -76,6 +79,11 @@ class OnboardingSelfCareMessageDeserializerTest {
         assertThat(actual.getInstitution().getDigitalAddress()).isEqualTo("pectest@pec.test.it");
         assertThat(actual.getInstitution().getTaxCode()).isEqualTo("00121930789");
         assertThat(actual.getInstitution().getDescription()).isEqualTo("prova onboarding ");
+        assertThat(actual.getCreatedAt()).isEqualTo(Instant.parse("2023-01-05T13:41:30.621Z"));
+        assertThat(actual.getZipCode()).isEqualTo("02045");
+        assertThat(actual.getBilling().getVatNumber()).isEqualTo("00121930789");
+        assertThat(actual.getBilling().getRecipientCode()).isEqualTo("new ");
+        assertThat(actual.getInstitution().getOriginId()).isEqualTo("GSP_00121930789");
 
         ExpectedLoggingAssertions.assertThat(logging).hasWarningMessage("Unknown property additionField encountered while deserialization JSON with value: \"additionValue\"");
     }
