@@ -13,13 +13,15 @@ public class OnboardingMapper {
         entity.setStatus(onBoardingSelfCareMessage.getState());
         entity.setCreated(onBoardingSelfCareMessage.getCreatedAt());
         entity.setLastUpdate(onBoardingSelfCareMessage.getUpdatedAt());
-        entity.setTaxCode(onBoardingSelfCareMessage.getInstitution().getTaxCode());
+        entity.setTaxCode(onBoardingSelfCareMessage.getBilling().getVatNumber());
         entity.setAddress(onBoardingSelfCareMessage.getInstitution().getAddress());
         entity.setDigitalAddress(onBoardingSelfCareMessage.getInstitution().getDigitalAddress());
         entity.setDescription(onBoardingSelfCareMessage.getInstitution().getDescription());
         entity.setId(onBoardingSelfCareMessage.getInternalIstitutionID());
         entity.setExternalId(onBoardingSelfCareMessage.getOnboardingTokenId());
         entity.setZipCode(onBoardingSelfCareMessage.getZipCode());
+        entity.setIpaCode(onBoardingSelfCareMessage.getInstitution().getOriginId());
+        entity.setSdiCode(onBoardingSelfCareMessage.getBilling().getRecipientCode());
         return entity;
     }
 }

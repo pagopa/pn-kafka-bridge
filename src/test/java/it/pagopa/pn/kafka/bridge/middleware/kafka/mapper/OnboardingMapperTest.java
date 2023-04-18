@@ -22,13 +22,15 @@ class OnboardingMapperTest {
         assertThat(actual.getId()).isEqualTo(inputMessage.getInternalIstitutionID());
         assertThat(actual.getStatus()).isEqualTo(inputMessage.getState());
         assertThat(actual.getLastUpdate()).isEqualTo(inputMessage.getUpdatedAt());
-        assertThat(actual.getTaxCode()).isEqualTo(inputMessage.getInstitution().getTaxCode());
+        assertThat(actual.getTaxCode()).isEqualTo(inputMessage.getBilling().getVatNumber());
         assertThat(actual.getDescription()).isEqualTo(inputMessage.getInstitution().getDescription());
         assertThat(actual.getAddress()).isEqualTo(inputMessage.getInstitution().getAddress());
         assertThat(actual.getDigitalAddress()).isEqualTo(inputMessage.getInstitution().getDigitalAddress());
         assertThat(actual.getExternalId()).isEqualTo(inputMessage.getOnboardingTokenId());
         assertThat(actual.getCreated()).isEqualTo(inputMessage.getCreatedAt());
         assertThat(actual.getZipCode()).isEqualTo(inputMessage.getZipCode());
+        assertThat(actual.getIpaCode()).isEqualTo(inputMessage.getInstitution().getOriginId());
+        assertThat(actual.getSdiCode()).isEqualTo(inputMessage.getBilling().getRecipientCode());
     }
 
     private OnboardingSelfCareMessage createInputMessage() {
@@ -42,7 +44,10 @@ class OnboardingMapperTest {
 
         OnboardingSelfCareMessage inputMessage = new OnboardingSelfCareMessage();
         inputMessage.setId("7014954b-5a2f-4aed-9f26-b2b778c2a126");
-        inputMessage.setBilling(new OnboardingSelfCareMessage.Billing());
+        OnboardingSelfCareMessage.Billing billing = new OnboardingSelfCareMessage.Billing();
+        billing.setVatNumber("00338460090");
+        billing.setRecipientCode("sdi-code");
+        inputMessage.setBilling(billing);
         inputMessage.setContentType("application/octet-stream");
         inputMessage.setInstitution(institution);
         inputMessage.setProduct("prod-pn-dev");
