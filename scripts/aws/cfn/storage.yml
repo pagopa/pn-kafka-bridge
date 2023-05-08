@@ -24,6 +24,10 @@ Parameters:
     Type: String
     Description: 'Where to send Logs'
 
+  LogRetention:
+    Type: Number
+    Default: 14
+
 Conditions:
   Never: !Equals [ 'true', 'false' ]
 
@@ -36,6 +40,7 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
       Parameters:
         LogGroupName: !Sub '${ProjectName}-kafka-bridge'
+        LogGroupRetention: !Ref LogRetention
         LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
 
 Outputs:
