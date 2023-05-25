@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.time.Instant;
-import java.util.regex.Pattern;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -54,13 +53,32 @@ class OnboardingSelfCareMessageDeserializerTest {
 
     }
 
-    // se in input non arriva un JSON, e quindi va in eccezione il Deserializer, devo avere un log di ERROR
+    // se in input non arriva un JSON, e non è presente il prodotto prod-pn-, va in eccezione il Deserializer, ma non loggo l'error
     @Test
     void deserializeInvalidJsonTest() {
         byte[] bytes = "prova".getBytes();
         OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
         assertThat(actual).isNull();
-        ExpectedLoggingAssertions.assertThat(logging).hasWarningMessageMatching(Pattern.compile("Error when deserializing.*").pattern());
+        ExpectedLoggingAssertions.assertThat(logging).hasNoErrorMessage();
+    }
+
+    // qui loggo l'errore di deserializzazione perché il prodotto è PN
+    @Test
+    void deserializeWithInvalidTimestampFormatFieldsForPNProduct() {
+        byte[] bytes = inputRequestWithInvalidTimestampFieldPN().getBytes();
+        OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
+        assertThat(actual).isNull();
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessage("Error when deserializing byte[] to OnboardingSelfCareMessage with input: " + new String(bytes));
+    }
+
+
+    // qui non loggo l'errore di deserializzazione perché il prodotto non è PN
+    @Test
+    void deserializeWithInvalidTimestampFormatFieldsForIOProduct() {
+        byte[] bytes = inputRequestWithInvalidTimestampFieldIO().getBytes();
+        OnboardingSelfCareMessage actual = deserializer.deserialize("topic", bytes);
+        assertThat(actual).isNull();
+        ExpectedLoggingAssertions.assertThat(logging).hasNoErrorMessage();
     }
 
 
@@ -173,6 +191,70 @@ class OnboardingSelfCareMessageDeserializerTest {
                   },
                   "internalIstitutionID":"10189036-35fe-4c03-bc27-d8d14d22a02e",
                   "state":"ACTIVE"
+                }
+                """;
+    }
+
+    private String inputRequestWithInvalidTimestampFieldPN() {
+        return """
+                {
+                  "billing":{
+                    "recipientCode":"new ",
+                    "vatNumber":"00121930789"
+                  },
+                  "contentType":"application/octet-stream",
+                  "fileName":"App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
+                  "filePath":"parties/docs/7cefb0b9-9296-4025-a7a4-0874cd732f32/App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
+                  "id":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
+                  "institution":{
+                    "address":"Via rossi,194",
+                    "description":"prova onboarding ",
+                    "digitalAddress":"pectest@pec.test.it",
+                    "institutionType":"GSP",
+                    "origin":"SELC",
+                    "originId":"GSP_00121930789",
+                    "taxCode":"00121930789"
+                  },
+                  "internalIstitutionID":"10189036-35fe-4c03-bc27-d8d14d22a02e",
+                  "onboardingTokenId":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
+                  "pricingPlan":"C1",
+                  "product":"prod-pn-dev",
+                  "state":"ACTIVE",
+                  "updatedAt":"2023-05-17T12:29:11.829489",
+                  "createdAt":"2023-05-17T12:29:11.829489",
+                  "zipCode":"02045"
+                }
+                """;
+    }
+
+    private String inputRequestWithInvalidTimestampFieldIO() {
+        return """
+                {
+                  "billing":{
+                    "recipientCode":"new ",
+                    "vatNumber":"00121930789"
+                  },
+                  "contentType":"application/octet-stream",
+                  "fileName":"App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
+                  "filePath":"parties/docs/7cefb0b9-9296-4025-a7a4-0874cd732f32/App IO_accordo_adesione (25).pdf4818769499989222848.pdf",
+                  "id":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
+                  "institution":{
+                    "address":"Via rossi,194",
+                    "description":"prova onboarding ",
+                    "digitalAddress":"pectest@pec.test.it",
+                    "institutionType":"GSP",
+                    "origin":"SELC",
+                    "originId":"GSP_00121930789",
+                    "taxCode":"00121930789"
+                  },
+                  "internalIstitutionID":"10189036-35fe-4c03-bc27-d8d14d22a02e",
+                  "onboardingTokenId":"7cefb0b9-9296-4025-a7a4-0874cd732f32",
+                  "pricingPlan":"C1",
+                  "product":"prod-io",
+                  "state":"ACTIVE",
+                  "updatedAt":"2023-05-17T12:29:11.829489",
+                  "createdAt":"2023-05-17T12:29:11.829489",
+                  "zipCode":"02045"
                 }
                 """;
     }

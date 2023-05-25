@@ -12,11 +12,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 @Slf4j
 public class OnboardingSelfCareMessageDeserializer implements Deserializer<OnboardingSelfCareMessage> {
 
+    private static final String GENERIC_PRODUCT_PN = "prod-pn-";
+    private static final Pattern PROD_PN_PATTERN;
+
     private final ObjectMapper objectMapper;
+
+
+    static {
+        String product = System.getenv("PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID");
+        if(product == null) {
+            product = GENERIC_PRODUCT_PN;
+        }
+
+        String regExp = "product\" ?: ?\"" + product;
+        log.info("RegExp to match in Deserializer: {}", regExp);
+        PROD_PN_PATTERN = Pattern.compile(regExp);
+    }
 
     public OnboardingSelfCareMessageDeserializer() {
         objectMapper = new ObjectMapper();
@@ -44,8 +60,19 @@ public class OnboardingSelfCareMessageDeserializer implements Deserializer<Onboa
             log.trace("Deserializing from topic: {}...", topic);
             return objectMapper.readValue(data, OnboardingSelfCareMessage.class);
         } catch (Exception e) {
-            log.warn("Error when deserializing byte[] to OnboardingSelfCareMessage", e);
+            logException(data, e);
             return null; //il filtro scarta sia i null che i product non PN
+        }
+    }
+
+    private void logException(byte[] data, Exception e) {
+        String jsonString = new String(data);
+        boolean isPnProduct = PROD_PN_PATTERN.matcher(jsonString).find();
+        if(isPnProduct) {
+            log.error(String.format("Error when deserializing byte[] to OnboardingSelfCareMessage with input: %s", jsonString), e);
+        }
+        else {
+            log.trace(String.format("Error when deserializing byte[] to OnboardingSelfCareMessage with input: %s", jsonString), e);
         }
     }
 
