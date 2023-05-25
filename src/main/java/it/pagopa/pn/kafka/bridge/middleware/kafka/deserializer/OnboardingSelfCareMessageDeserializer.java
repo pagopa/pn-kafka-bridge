@@ -24,13 +24,11 @@ public class OnboardingSelfCareMessageDeserializer implements Deserializer<Onboa
 
 
     static {
-        String product;
-        if(System.getenv("PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID") != null) {
-            product = System.getenv("PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID");
-        }
-        else {
+        String product = System.getenv("PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID");
+        if(product == null) {
             product = GENERIC_PRODUCT_PN;
         }
+
         String regExp = "product\" ?: ?\"" + product;
         log.info("RegExp to match in Deserializer: {}", regExp);
         PROD_PN_PATTERN = Pattern.compile(regExp);
