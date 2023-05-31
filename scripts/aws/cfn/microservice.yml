@@ -178,6 +178,9 @@ Parameters:
     Type: Number
     Description: maximum autoscaling number of tasks 
     
+  LogAlarmStrategy:
+    Type: String
+    Default: 'ERROR_FATAL'
 Resources:
 
   # PN-Kafka-Bridge microservice
@@ -222,6 +225,7 @@ Resources:
         TaskRoleManagedPolicyArn: !Ref KafkaBridgeMicroserviceTaskManagedPolicy
         AlbSecurityGroup: !Ref AlbSecurityGroup
         EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
   KafkaBridgeMicroserviceTaskManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
