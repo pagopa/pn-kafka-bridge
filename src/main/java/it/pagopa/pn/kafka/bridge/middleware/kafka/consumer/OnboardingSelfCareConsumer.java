@@ -19,7 +19,7 @@ public class OnboardingSelfCareConsumer {
 
     @KafkaListener(
             id = "${pn.kafka-bridge.onboarding-group-id}",
-            topics = "${pn.kafka-bridge.kafka-onboarding-topic-name}",
+            topics = "${pn.kafka-bridge.onboarding-topic-name}",
             filter = "onboardingKafkaFilter",
             properties = {
                     "value.deserializer=it.pagopa.pn.kafka.bridge.middleware.kafka.deserializer.OnboardingSelfCareMessageDeserializer"
@@ -27,10 +27,7 @@ public class OnboardingSelfCareConsumer {
     )
     public void listen(@Header(KafkaHeaders.RECEIVED_TOPIC) String topic, @Payload OnboardingSelfCareMessage inputMessage) {
         log.info("[{}] Received message from topic: {}, with value: {}", inputMessage.getInternalIstitutionID(), topic, inputMessage);
-        if(inputMessage != null) {
-            onboardingService.sendMessage(inputMessage);
-        }
-
+        onboardingService.sendMessage(inputMessage);
     }
 
 }

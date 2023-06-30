@@ -17,12 +17,16 @@ public class OnboardingSelfCareMessage {
     private String onboardingTokenId;
     private String product;
     private String state;
+    private Instant createdAt;
     private Instant updatedAt;
+    private String pricingPlan;
+    private String zipCode;
 
     @Data
     public static class Billing {
         private String recipientCode;
         private String vatNumber;
+        private Boolean publicServices;
     }
 
     @Data

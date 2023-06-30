@@ -10,17 +10,17 @@ Parameters:
     Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
       experimental environments without crash official development environment'
 
-  KafkaOnBoardingTopicName:
+  KafkaOnboardingTopicName:
     Type: String
     Description: 'Kafka topic name for onboarding institutions'
     Default: 'sc-contracts'
 
-  KafkaOnBoardingGroupId:
+  KafkaOnboardingGroupId:
     Type: String
     Description: 'Kafka group id for onboarding institutions'
     Default: ''
 
-  KafkaOnBoardingBootstrapServers:
+  KafkaOnboardingBootstrapServers:
     Type: String
     Description: 'Kafka bootstrap servers'
     Default: ''
@@ -29,6 +29,158 @@ Parameters:
     Type: String
     Description: 'Selfcare product id'
 
+  KafkaBridgeOnboardingQueueName:
+    Type: String
+    Description: 'Queue name of Kafka bridge messages for onboarding institutes'
+
+  KafkaBridgeOnboardingQueueARN:
+    Type: String
+    Description: 'Queue ARN of Kafka bridge messages for onboarding institutes'
+
+  KafkaBridgeOnboardingQueueAlarmARN:
+    Type: String
+    Description: 'pn-kafka-bridge onboarding institutes queue alarm ARN'
+
+  KafkaBridgeOnboardingQueueAgeAlarmARN:
+    Type: String
+    Description: pn-kafka-bridge onboarding institute queue age alarm ARN
+
+  AlarmSNSTopicArn:
+    Type: String
+    Description: 'ARN of alarm topic'
+
+  ECSClusterName:
+    Type: String
+    Description: 'The name of the ECS cluster where the microservice is going to be deployed'
+
+  SubnetsIds:
+    Type: String
+    Description: 'subnets ids comma separated list. Where to deploy the microservice'
+
+  VpcEgressSubnetsIds:
+    Type: String
+    Description: subnets where to install PN-CORE
+
+  VpcId:
+    Type: String
+    Description: 'VpcId where the microservice is going to be deployed'
+
+  EcsDefaultSecurityGroup:
+    Type: String
+    Description: 'Default security group required by infrastructure'
+
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: 'The S3 bucket from which to fetch the templates used by this stack.'
+
+  ContainerImageUri:
+    Type: String
+    Description: 'Exact container image URI with full repository and image digest'
+
+  CorsAllowedDomains:
+    Type: String
+    Description: 'Comma separated list of domains allowed to make cross origin request'
+
+  Version:
+    Type: String
+    Description: 'Keep track of used projects commitIds'
+
+  MicroserviceNumber:
+    Type: Number
+    Description: 'Disambiguation useful for load balancer rules'
+
+  ApplicationLoadBalancerListenerArn:
+    Type: String
+    Description: 'Load balancer listener where HTTP endpoints is going to be registered'
+
+  AlbSecurityGroup:
+    Type: String
+    Description: 'Application load balancer security group'
+
+  # Log group parameters
+  EcsLogGroup:
+    Type: String
+    Description: 'Ecs log group name'
+
+  # Heath Check parameters
+  HealthCheckInterval:
+    Description: Seconds between two health check
+    Type: Number
+    Default: 60
+
+  HealthCheckTimeout:
+    Description: health check timeout seconds
+    Type: Number
+    Default: 5
+  
+  HealthyThresholdCount:
+    Description: |
+      The number of consecutive health checks successes required before considering 
+      an unhealthy target healthy. 
+    Type: Number
+    Default: 5
+  
+  UnhealthyThresholdCount:
+    Description: |
+      The number of consecutive health check failures required before considering a target unhealthy. 
+    Type: Number
+    Default: 2
+
+  # Instance parameters
+  # 256 (.25 vCPU) - Available memory values: 0.5GB, 1GB, 2GB
+  # 512 (.5 vCPU) - Available memory values: 1GB, 2GB, 3GB, 4GB
+  # 1024 (1 vCPU) - Available memory values: 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB
+  # 2048 (2 vCPU) - Available memory values: Between 4GB and 16GB in 1GB increments
+  # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
+  CpuValue:
+    Type: Number
+    Default: 1024
+    Description: Fargate virtual CPU quantity 1024 equals one vCPU
+
+  # 0.5GB, 1GB, 2GB - Available cpu values: 256 (.25 vCPU)
+  # 1GB, 2GB, 3GB, 4GB - Available cpu values: 512 (.5 vCPU)
+  # 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB - Available cpu values: 1024 (1 vCPU)
+  # Between 4GB and 16GB in 1GB increments - Available cpu values: 2048 (2 vCPU)
+  # Between 8GB and 30GB in 1GB increments - Available cpu values: 4096 (4 vCPU)
+  MemoryAmount:
+    Type: String
+    Default: 2GB
+    Description: memory amount reserved to the task pod.
+    AllowedValues: [ 2GB, 4GB, 6GB, 8GB ]
+
+  # Autoscaling parameters
+  AutoscalingCheckPeriod:
+    Default: 60
+    Type: Number
+    Description: minimum autoscaling number of tasks\
+
+  AutoscalingDataPointN:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingDataPointM:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingThreshold:
+    Default: 70
+    Type: String
+  
+  MinTasksNumber:
+    Default: 1
+    Type: Number
+    Description: minimum autoscaling number of tasks
+
+  MaxTasksNumber:
+    Default: 6
+    Type: Number
+    Description: maximum autoscaling number of tasks 
+    
+  LogAlarmStrategy:
+    Type: String
+    Default: 'ERROR_FATAL'
 Resources:
 
   # PN-Kafka-Bridge microservice
@@ -37,28 +189,43 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-KafkaBridge'
-        CpuValue: 1024
-        MemoryAmount: 2GB
+        MicroServiceUniqueName: !Sub '${ProjectName}-kafka-bridge'
+        CpuValue: !Ref CpuValue
+        MemoryAmount: !Ref MemoryAmount
+        HealthCheckTimeout: !Ref HealthCheckTimeout
+        HealthCheckInterval: !Ref HealthCheckInterval
+        HealthyThresholdCount: !Ref HealthyThresholdCount
+        UnhealthyThresholdCount: !Ref UnhealthyThresholdCount
+        AutoscalingStrategy: REST-API
+        AutoscalingThreshold: !Ref AutoscalingThreshold
+        AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
+        MinTasksNumber: !Ref MinTasksNumber
+        MaxTasksNumber: !Ref MaxTasksNumber
+        AutoscalingDataPointN: !Ref AutoscalingDataPointN
+        AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
-        ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_KAFKA_ONBOARDING_TOPIC_NAME=${KafkaOnBoardingTopicName}'
-        ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_KAFKA_ONBOARDING_GROUP_ID=${KafkaOnBoardingGroupId}'
-        ContainerEnvEntry5: !Sub 'SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=${KafkaOnBoardingBootstrapServers}'
-        ContainerEnvEntry6: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD={{resolve:secretsmanager:${ProjectName}-ExternalRegistries-Secrets:SecretString:KafkaOnBoardingSaslJaasConfig}}'
-        ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
-        MappedPaths: '/ext-registry/*,/ext-registry-private/*,/ext-registry-b2b/*'
+        ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_TOPIC_NAME=${KafkaOnboardingTopicName}'
+        ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_GROUP_ID=${KafkaOnboardingGroupId}'
+        ContainerEnvEntry5: !Sub 'SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=${KafkaOnboardingBootstrapServers}'
+        ContainerEnvEntry6: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
+        ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
+        ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
+        MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
+        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
+        MappedPaths: '/kafka-bridge/*'
         ECSClusterName: !Ref ECSClusterName
-        Subnets: !Ref SubnetsIds
+        Subnets: !Ref VpcEgressSubnetsIds
         VpcId: !Ref VpcId
         EcsDefaultSecurityGroup: !Ref EcsDefaultSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         TaskRoleManagedPolicyArn: !Ref KafkaBridgeMicroserviceTaskManagedPolicy
         AlbSecurityGroup: !Ref AlbSecurityGroup
-
+        EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
   KafkaBridgeMicroserviceTaskManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -78,7 +245,7 @@ Resources:
               - sqs:SendMessage
               - sqs:SendMessageBatch
             Resource:
-              - !Ref DeliveryPushInputsQueueARN
+              - !Ref KafkaBridgeOnboardingQueueARN
 
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
@@ -87,25 +254,17 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
       Parameters:
         DashboardName: !Sub "${ProjectName}-kafka-bridge"
-        DynamoDBTableNames: !Join 
-          - ',' 
-          - - !Ref OptInSentTableName
-            - !Ref OnboardInstitutionsTableName
-        RestApiStageArns: !Join
-          - ','
-          - - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiStageArn
-            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiStageArn
-        RestApiNames: !Join
-          - ','
-          - - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiName
-            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiName
         AlarmArns: !Join
           - ','
           - - !GetAtt KafkaBridgeMicroservice.Outputs.FatalLogsMetricAlarmArn
-            - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiErrorAlarmArn
-            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiErrorAlarmArn
-            - !GetAtt KafkaBridgeMicroservicePublicWebAPI.Outputs.RestApiLatencyAlarmArn
-            - !GetAtt KafkaBridgeMicroservicePublicB2BAPI.Outputs.RestApiLatencyAlarmArn
+            - !Ref KafkaBridgeOnboardingQueueAlarmARN
+            - !Ref KafkaBridgeOnboardingQueueAgeAlarmARN
+        QueueArns: !Join
+          - ','
+          - - !Ref KafkaBridgeOnboardingQueueARN
+        LogGroupsNames: !Join
+          - ','
+          - - !Sub '/aws/ecs/${ProjectName}-kafka-bridge'
 
 
 Outputs:

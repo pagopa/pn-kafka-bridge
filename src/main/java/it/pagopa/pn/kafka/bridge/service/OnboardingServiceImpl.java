@@ -21,13 +21,13 @@ public class OnboardingServiceImpl implements OnboardingService {
     public void sendMessage(OnboardingSelfCareMessage inputMessage) {
         PnOnboardInstitutionPayload payload = mapper.toPnOnboardInstitutionPayload(inputMessage);
         PnOnboardingInstitutionEvent event = buildEvent(payload);
-        log.debug("[{}] Sending message to SQS", payload.getInstitutionId());
+        log.debug("[{}] Sending message to SQS", payload.getId());
         notificationPaidProducer.push(event);
-        log.info("[{}] Message sent to SQS: {}", payload.getInstitutionId(), event);
+        log.info("[{}] Message sent to SQS: {}", payload.getId(), event);
     }
 
     private PnOnboardingInstitutionEvent buildEvent(PnOnboardInstitutionPayload payload) {
-        String eventId = payload.getTaxCode() + "_onboarding_institution_" + payload.getInstitutionId();
+        String eventId = payload.getTaxCode() + "_onboarding_institution_" + payload.getId();
         return PnOnboardingInstitutionEvent.builder()
                 .header(StandardEventHeader.builder()
                         .iun(payload.getTaxCode()) //TODO non c'è lo iun capire se obbligatorio

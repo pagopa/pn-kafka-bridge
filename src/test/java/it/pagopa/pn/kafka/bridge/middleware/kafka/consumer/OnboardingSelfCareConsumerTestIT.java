@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 @SpringBootTest(properties = {
         "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092",
         "spring.kafka.consumer.auto-offset-reset=earliest",
-        "pn.external-registry.kafka-pagamenti-group-id=consumer-test",
+        "pn.kafka-bridge.onboarding-group-id=consumer-test",
         "spring.kafka.consumer.properties.security.protocol=PLAINTEXT"
 })
 @DirtiesContext
@@ -58,6 +58,21 @@ class OnboardingSelfCareConsumerTestIT {
 
     }
 
+    @Test
+    void listenNotReceivedMessageForFiltering() throws ExecutionException, InterruptedException, JsonProcessingException {
+
+        String inputRequest = inputRequestFormSelfCareWithNotPNProduct();
+
+        //scrivo su Kafka una Request presa dal flusso reale di SelfCare
+        kafkaTemplate.send("sc-contracts", inputRequest).get();
+
+        OnboardingSelfCareMessage expectedValue = objectMapper.readValue(inputRequest, OnboardingSelfCareMessage.class);
+
+        //verifico che il messaggio non venga ricevuto dal consumer perché scartato dal filter
+        Mockito.verify(consumer, Mockito.timeout(1000).times(0)).listen("sc-contracts", expectedValue);
+
+    }
+
     private String inputRequestFormSelfCare() {
         return """
                 {
@@ -80,9 +95,42 @@ class OnboardingSelfCareConsumerTestIT {
                    },
                    "internalIstitutionID":"7861b02d-8cb4-4de9-95d2-5ed02f3de38a",
                    "onboardingTokenId":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
-                   "product":"prod-io",
+                   "product":"prod-pn-dev",
                    "state":"ACTIVE",
-                   "updatedAt":"2023-01-10T15:20:38.94Z"
+                   "updatedAt":"2023-01-10T15:20:38.94Z",
+                   "createdAt":"2023-01-05T13:41:30.621Z",
+                   "zipCode":"02045"
+                }
+                """;
+    }
+
+    private String inputRequestFormSelfCareWithNotPNProduct() {
+        return """
+                {
+                   "billing":{
+                      "recipientCode":"bc_0432",
+                      "vatNumber":"00338460090"
+                   },
+                   "contentType":"application/octet-stream",
+                   "fileName":"App IO_accordo_adesione.pdf7419256794741715935.pdf",
+                   "filePath":"parties/docs/7014954b-5a2f-4aed-9f26-b2b778c2a120/App IO_accordo_adesione.pdf7419256794741715935.pdf",
+                   "id":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
+                   "institution":{
+                      "address":"Piazza Umberto I, 1",
+                      "description":"Comune di Tovo San Giacomo",
+                      "digitalAddress":"protocollo@comunetovosangiacomo.it",
+                      "institutionType":"PA",
+                      "origin":"IPA",
+                      "originId":"c_l315",
+                      "taxCode":"00338460090"
+                   },
+                   "internalIstitutionID":"7861b02d-8cb4-4de9-95d2-5ed02f3de38a",
+                   "onboardingTokenId":"7014954b-5a2f-4aed-9f26-b2b778c2a120",
+                   "product":"prod-io-dev",
+                   "state":"ACTIVE",
+                   "updatedAt":"2023-01-10T15:20:38.94Z",
+                   "createdAt":"2023-01-05T13:41:30.621Z",
+                   "zipCode":"02045"
                 }
                 """;
     }
