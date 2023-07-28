@@ -25,4 +25,8 @@ public class ValidatorUtil {
         }
         return true;
     }
+
+    protected Validator getValidator() {
+        return validator;
+    }
 }
