@@ -226,6 +226,7 @@ Resources:
         AlbSecurityGroup: !Ref AlbSecurityGroup
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
+        ErrorFatalDataPointsToAlarm: 20
 
   KafkaBridgeMicroserviceTaskManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
