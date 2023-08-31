@@ -84,7 +84,7 @@ class OnboardingSelfCareMessageDeserializerTest {
 
 
     // se in input arriva un JSON con un campo non previsto in OnboardingSelfCareMessage,
-    // devo avere un log di WARN ma la de-serializzazione non deve andare in errore
+    // devo avere un log di TRACE ma la de-serializzazione non deve andare in errore
     @Test
     void deserializeWithAdditionFieldForPNProductTest() {
         byte[] bytes = inputRequestWithAdditionalFieldPN().getBytes();
@@ -103,7 +103,8 @@ class OnboardingSelfCareMessageDeserializerTest {
         assertThat(actual.getBilling().getRecipientCode()).isEqualTo("new ");
         assertThat(actual.getInstitution().getOriginId()).isEqualTo("GSP_00121930789");
 
-        ExpectedLoggingAssertions.assertThat(logging).hasWarningMessage("Unknown property additionField encountered while deserialization JSON with value: \"additionValue\"");
+        //log spostati da WARNING a TRACE per la troppa quantità diq uesti ultimi
+//        ExpectedLoggingAssertions.assertThat(logging).hasWarningMessage("Unknown property additionField encountered while deserialization JSON with value: \"additionValue\"");
     }
 
     // se il DTO OnboardingSelfCareMessage contiene più campi rispetto al JSON che arriva, questo non crea problemi
