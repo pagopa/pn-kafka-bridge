@@ -25,7 +25,8 @@ import java.util.concurrent.ExecutionException;
         "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092",
         "spring.kafka.consumer.auto-offset-reset=earliest",
         "pn.kafka-bridge.onboarding-group-id=consumer-test",
-        "spring.kafka.consumer.properties.security.protocol=PLAINTEXT"
+        "spring.kafka.consumer.properties.security.protocol=PLAINTEXT",
+        "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev"
 })
 @EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
 class OnboardingSelfCareConsumerTestIT {
@@ -78,7 +79,8 @@ class OnboardingSelfCareConsumerTestIT {
         OnboardingSelfCareMessage expectedValue = objectMapper.readValue(inputRequest, OnboardingSelfCareMessage.class);
 
         //verifico che il messaggio non venga ricevuto dal consumer perché scartato dal filter
-        Mockito.verify(consumer, Mockito.timeout(1000).times(0)).listen("sc-contracts", expectedValue);
+        Thread.sleep(2000L);
+        Mockito.verify(consumer, Mockito.never()).listen("sc-contracts", expectedValue);
 
     }
 
