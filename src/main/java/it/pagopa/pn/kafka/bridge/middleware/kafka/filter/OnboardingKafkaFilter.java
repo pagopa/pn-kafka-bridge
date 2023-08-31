@@ -41,7 +41,7 @@ public class OnboardingKafkaFilter implements RecordFilterStrategy<Object, Onboa
         }
 
         if(discarded) {
-            log.trace("Record discarded during filtering: {}", consumerRecord.value());
+            log.debug("Record discarded during filtering: {}", consumerRecord.value());
         }
 
         return discarded;

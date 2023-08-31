@@ -44,7 +44,7 @@ public class OnboardingSelfCareMessageDeserializer implements Deserializer<Onboa
             public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer,
                                                  Object beanOrClass, String propertyName) throws IOException {
 
-                log.warn("Unknown property {} encountered while deserialization JSON with value: {}", propertyName, p.readValueAsTree());
+                log.trace("Unknown property {} encountered while deserialization JSON with value: {}", propertyName, p.readValueAsTree());
                 return true;
             }
         });
