@@ -52,9 +52,9 @@ class ValidatorUtilTest {
     void testTaxCodePartitaIvaInvalidValidation() {
         String pi = "01207650639,";
         OnboardingSelfCareMessage message = new OnboardingSelfCareMessage();
-        OnboardingSelfCareMessage.Institution institution = new OnboardingSelfCareMessage.Institution();
-        institution.setTaxCode(pi);
-        message.setInstitution(institution);
+        OnboardingSelfCareMessage.Billing billing = new OnboardingSelfCareMessage.Billing();
+        billing.setVatNumber(pi);
+        message.setBilling(billing);
 
         assertThat(validatorUtil.getValidator().validate(message)).hasSize(1);
     }
@@ -62,9 +62,9 @@ class ValidatorUtilTest {
     @Test
     void testTaxCodeNullValidation() {
         OnboardingSelfCareMessage message = new OnboardingSelfCareMessage();
-        OnboardingSelfCareMessage.Institution institution = new OnboardingSelfCareMessage.Institution();
-        institution.setTaxCode(null);
-        message.setInstitution(institution);
+        OnboardingSelfCareMessage.Billing billing = new OnboardingSelfCareMessage.Billing();
+        billing.setVatNumber(null);
+        message.setBilling(billing);
 
         assertThat(validatorUtil.getValidator().validate(message)).hasSize(1);
     }

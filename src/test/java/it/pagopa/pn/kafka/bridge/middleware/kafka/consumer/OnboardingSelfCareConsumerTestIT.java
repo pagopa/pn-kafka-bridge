@@ -99,7 +99,7 @@ class OnboardingSelfCareConsumerTestIT {
         //verifico che il messaggio non arrivi al service perché non supera la validazione
         Mockito.verify(onboardingService, Mockito.timeout(1000).times(0)).sendMessage(expectedValue);
         awaitFlow();
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*institution.taxCode.*");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*billing.vatNumber.*");
 
     }
 
@@ -120,7 +120,7 @@ class OnboardingSelfCareConsumerTestIT {
         //verifico che il messaggio non arrivi al service perché non supera la validazione
         Mockito.verify(onboardingService, Mockito.timeout(1000).times(0)).sendMessage(expectedValue);
         awaitFlow();
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*institution.taxCode.*");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*billing.vatNumber.*");
     }
 
     private String inputRequestFormSelfCare() {
