@@ -22,6 +22,9 @@ public class OnboardingMapper {
         entity.setZipCode(onBoardingSelfCareMessage.getZipCode());
         entity.setIpaCode(onBoardingSelfCareMessage.getInstitution().getOriginId());
         entity.setSdiCode(onBoardingSelfCareMessage.getBilling().getRecipientCode());
+        entity.setRootId(onBoardingSelfCareMessage.getRootParent() == null ? onBoardingSelfCareMessage.getInternalIstitutionID() : onBoardingSelfCareMessage.getRootParent().getId());
+        entity.setRootDescription(onBoardingSelfCareMessage.getRootParent() == null ? null : onBoardingSelfCareMessage.getRootParent().getDescription());
+        entity.setRootIpaCode(onBoardingSelfCareMessage.getRootParent() == null ? null : onBoardingSelfCareMessage.getRootParent().getOriginId());
         return entity;
     }
 }

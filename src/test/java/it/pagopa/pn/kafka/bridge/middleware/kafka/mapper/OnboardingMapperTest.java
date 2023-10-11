@@ -3,6 +3,7 @@ package it.pagopa.pn.kafka.bridge.middleware.kafka.mapper;
 import it.pagopa.pn.api.dto.events.PnOnboardInstitutionPayload;
 import it.pagopa.pn.kafka.bridge.mapper.OnboardingMapper;
 import it.pagopa.pn.kafka.bridge.model.OnboardingSelfCareMessage;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -15,7 +16,7 @@ class OnboardingMapperTest {
 
     @Test
     void toPnOnboardInstitutionPayloadTest() {
-        OnboardingSelfCareMessage inputMessage = createInputMessage();
+        OnboardingSelfCareMessage inputMessage = createInputMessage(true);
 
         PnOnboardInstitutionPayload actual = onboardingMapper.toPnOnboardInstitutionPayload(inputMessage);
 
@@ -31,9 +32,38 @@ class OnboardingMapperTest {
         assertThat(actual.getZipCode()).isEqualTo(inputMessage.getZipCode());
         assertThat(actual.getIpaCode()).isEqualTo(inputMessage.getInstitution().getOriginId());
         assertThat(actual.getSdiCode()).isEqualTo(inputMessage.getBilling().getRecipientCode());
+
+        assertThat(actual.getRootId()).isEqualTo(inputMessage.getInternalIstitutionID());
+        Assertions.assertNull(actual.getRootDescription());
+        Assertions.assertNull(actual.getRootIpaCode());
+
     }
 
-    private OnboardingSelfCareMessage createInputMessage() {
+    @Test
+    void toPnOnboardInstitutionPayloadNotRootTest() {
+        OnboardingSelfCareMessage inputMessage = createInputMessage(false);
+
+        PnOnboardInstitutionPayload actual = onboardingMapper.toPnOnboardInstitutionPayload(inputMessage);
+
+        assertThat(actual.getId()).isEqualTo(inputMessage.getInternalIstitutionID());
+        assertThat(actual.getStatus()).isEqualTo(inputMessage.getState());
+        assertThat(actual.getLastUpdate()).isEqualTo(inputMessage.getUpdatedAt());
+        assertThat(actual.getTaxCode()).isEqualTo(inputMessage.getBilling().getVatNumber());
+        assertThat(actual.getDescription()).isEqualTo(inputMessage.getInstitution().getDescription());
+        assertThat(actual.getAddress()).isEqualTo(inputMessage.getInstitution().getAddress());
+        assertThat(actual.getDigitalAddress()).isEqualTo(inputMessage.getInstitution().getDigitalAddress());
+        assertThat(actual.getExternalId()).isEqualTo(inputMessage.getOnboardingTokenId());
+        assertThat(actual.getCreated()).isEqualTo(inputMessage.getCreatedAt());
+        assertThat(actual.getZipCode()).isEqualTo(inputMessage.getZipCode());
+        assertThat(actual.getIpaCode()).isEqualTo(inputMessage.getInstitution().getOriginId());
+        assertThat(actual.getSdiCode()).isEqualTo(inputMessage.getBilling().getRecipientCode());
+
+        assertThat(actual.getRootId()).isEqualTo(inputMessage.getRootParent().getId());
+        assertThat(actual.getRootDescription()).isEqualTo(inputMessage.getRootParent().getDescription());
+        assertThat(actual.getRootIpaCode()).isEqualTo(inputMessage.getRootParent().getOriginId());
+    }
+
+    private OnboardingSelfCareMessage createInputMessage(boolean root) {
         OnboardingSelfCareMessage.Institution institution = new OnboardingSelfCareMessage.Institution();
         institution.setAddress("Piazza Umberto I, 1");
         institution.setOrigin("IPA");
@@ -57,6 +87,13 @@ class OnboardingMapperTest {
         inputMessage.setCreatedAt(Instant.parse("2023-01-05T13:41:30.621Z"));
         inputMessage.setZipCode("02045");
 
+        if(!root){
+            OnboardingSelfCareMessage.RootParent rootParent = new OnboardingSelfCareMessage.RootParent();
+            rootParent.setDescription("Root Description");
+            rootParent.setId("7015954b-5a2f-4aed-9f26-b2b778c2a126");
+            rootParent.setOriginId("1234");
+            inputMessage.setRootParent(rootParent);
+        }
         return inputMessage;
     }
 

@@ -25,6 +25,7 @@ public class OnboardingSelfCareMessage {
     private Instant updatedAt;
     private String pricingPlan;
     private String zipCode;
+    private RootParent rootParent;
 
     @Data
     public static class Billing {
@@ -45,5 +46,12 @@ public class OnboardingSelfCareMessage {
         private String origin;
         private String originId;
         private String taxCode;
+    }
+
+    @Data
+    public static class RootParent{
+        private String id;
+        private String originId;
+        private String description;
     }
 }
