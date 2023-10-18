@@ -58,9 +58,9 @@ class OnboardingMapperTest {
         assertThat(actual.getIpaCode()).isEqualTo(inputMessage.getInstitution().getOriginId());
         assertThat(actual.getSdiCode()).isEqualTo(inputMessage.getBilling().getRecipientCode());
 
-        assertThat(actual.getRootId()).isEqualTo(inputMessage.getRootParent().getId());
-        assertThat(actual.getRootDescription()).isEqualTo(inputMessage.getRootParent().getDescription());
-        assertThat(actual.getRootIpaCode()).isEqualTo(inputMessage.getRootParent().getOriginId());
+        assertThat(actual.getRootId()).isEqualTo(inputMessage.getInstitution().getRootParent().getId());
+        assertThat(actual.getRootDescription()).isEqualTo(inputMessage.getInstitution().getRootParent().getDescription());
+        assertThat(actual.getRootIpaCode()).isEqualTo(inputMessage.getInstitution().getRootParent().getOriginId());
     }
 
     private OnboardingSelfCareMessage createInputMessage(boolean root) {
@@ -88,11 +88,11 @@ class OnboardingMapperTest {
         inputMessage.setZipCode("02045");
 
         if(!root){
-            OnboardingSelfCareMessage.RootParent rootParent = new OnboardingSelfCareMessage.RootParent();
+            OnboardingSelfCareMessage.Institution.RootParent rootParent = new OnboardingSelfCareMessage.Institution.RootParent();
             rootParent.setDescription("Root Description");
             rootParent.setId("7015954b-5a2f-4aed-9f26-b2b778c2a126");
             rootParent.setOriginId("1234");
-            inputMessage.setRootParent(rootParent);
+            institution.setRootParent(rootParent);
         }
         return inputMessage;
     }

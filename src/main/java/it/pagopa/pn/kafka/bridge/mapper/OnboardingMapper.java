@@ -22,9 +22,20 @@ public class OnboardingMapper {
         entity.setZipCode(onBoardingSelfCareMessage.getZipCode());
         entity.setIpaCode(onBoardingSelfCareMessage.getInstitution().getOriginId());
         entity.setSdiCode(onBoardingSelfCareMessage.getBilling().getRecipientCode());
-        entity.setRootId(onBoardingSelfCareMessage.getRootParent() == null ? onBoardingSelfCareMessage.getInternalIstitutionID() : onBoardingSelfCareMessage.getRootParent().getId());
-        entity.setRootDescription(onBoardingSelfCareMessage.getRootParent() == null ? null : onBoardingSelfCareMessage.getRootParent().getDescription());
-        entity.setRootIpaCode(onBoardingSelfCareMessage.getRootParent() == null ? null : onBoardingSelfCareMessage.getRootParent().getOriginId());
+
+        if( onBoardingSelfCareMessage.getInstitution().getRootParent() == null ||
+                onBoardingSelfCareMessage.getInstitution().getRootParent().getId() == null ) {
+
+            entity.setRootId(onBoardingSelfCareMessage.getInternalIstitutionID());
+            //if rootParentId is null rootDescription and RootIpaCode are not useful
+            entity.setRootDescription(null);
+            entity.setRootIpaCode(null);
+        } else {
+            entity.setRootId(onBoardingSelfCareMessage.getInstitution().getRootParent().getId());
+            entity.setRootDescription(onBoardingSelfCareMessage.getInstitution().getRootParent().getDescription());
+            entity.setRootIpaCode(onBoardingSelfCareMessage.getInstitution().getRootParent().getOriginId());
+        }
+
         return entity;
     }
 }
