@@ -27,6 +27,7 @@ public class OnboardingMapper {
                 onBoardingSelfCareMessage.getInstitution().getRootParent().getId() == null ) {
 
             entity.setRootId(onBoardingSelfCareMessage.getInternalIstitutionID());
+            //if rootParentId is null rootDescription and RootIpaCode are not useful
             entity.setRootDescription(null);
             entity.setRootIpaCode(null);
         } else {
