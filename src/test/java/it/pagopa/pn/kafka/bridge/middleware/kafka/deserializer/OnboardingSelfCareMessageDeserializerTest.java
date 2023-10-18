@@ -47,6 +47,58 @@ class OnboardingSelfCareMessageDeserializerTest {
     }
 
     @Test
+    void deserializeTestRootParent() {
+        String requestFromSelfCare = inputRequestWithRootParent();
+
+        OnboardingSelfCareMessage actual = deserializer.deserialize("topic", requestFromSelfCare.getBytes());
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getInternalIstitutionID()).isEqualTo("2266014e-c6e1-437e-81af-c113259f2f95");
+        assertThat(actual.getState()).isEqualTo("ACTIVE");
+        assertThat(actual.getUpdatedAt()).isEqualTo(Instant.parse("2023-10-18T10:39:01.949686Z"));
+        assertThat(actual.getInstitution().getAddress()).isEqualTo("da_indicare");
+        assertThat(actual.getInstitution().getDigitalAddress()).isEqualTo("protocollo@pec.comune.aglientu.ot.it");
+        assertThat(actual.getInstitution().getTaxCode()).isEqualTo("00255510901");
+        assertThat(actual.getInstitution().getDescription()).isEqualTo("Ufficio per la transizione al Digitale");
+        assertThat(actual.getCreatedAt()).isEqualTo(Instant.parse("2023-10-18T10:39:01.949686Z"));
+        assertThat(actual.getBilling().getVatNumber()).isEqualTo("00255510901");
+        assertThat(actual.getBilling().getRecipientCode()).isEqualTo("HETFZG");
+        assertThat(actual.getInstitution().getOriginId()).isEqualTo("HETFZG");
+        assertThat(actual.getInstitution().getRootParent()).isNotNull();
+        assertThat(actual.getInstitution().getRootParent().getId()).isEqualTo("acb31680-55e6-4a3d-9355-b7531f55d11a");
+        assertThat(actual.getInstitution().getRootParent().getDescription()).isEqualTo("Comune di Aglientu");
+        assertThat(actual.getInstitution().getRootParent().getOriginId()).isEqualTo("c_h848");
+
+    }
+
+
+    @Test
+    void deserializeTestWithoutRootParent() {
+        String requestFromSelfCare = inputRequestwithoutRootParent();
+
+        OnboardingSelfCareMessage actual = deserializer.deserialize("topic", requestFromSelfCare.getBytes());
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getInternalIstitutionID()).isEqualTo("2266014e-c6e1-437e-81af-c113259f2f95");
+        assertThat(actual.getState()).isEqualTo("ACTIVE");
+        assertThat(actual.getUpdatedAt()).isEqualTo(Instant.parse("2023-10-18T10:39:01.949686Z"));
+        assertThat(actual.getInstitution().getAddress()).isEqualTo("da_indicare");
+        assertThat(actual.getInstitution().getDigitalAddress()).isEqualTo("protocollo@pec.comune.aglientu.ot.it");
+        assertThat(actual.getInstitution().getTaxCode()).isEqualTo("00255510901");
+        assertThat(actual.getInstitution().getDescription()).isEqualTo("Ufficio per la transizione al Digitale");
+        assertThat(actual.getCreatedAt()).isEqualTo(Instant.parse("2023-10-18T10:39:01.949686Z"));
+        assertThat(actual.getBilling().getVatNumber()).isEqualTo("00255510901");
+        assertThat(actual.getBilling().getRecipientCode()).isEqualTo("HETFZG");
+        assertThat(actual.getInstitution().getOriginId()).isEqualTo("HETFZG");
+        assertThat(actual.getInstitution().getRootParent()).isNotNull();
+        assertThat(actual.getInstitution().getRootParent().getId()).isNull();
+        assertThat(actual.getInstitution().getRootParent().getDescription()).isNull();
+        assertThat(actual.getInstitution().getRootParent().getOriginId()).isNull();
+
+        System.out.println(actual);
+    }
+
+    @Test
     void deserializeWithNullTest() {
         OnboardingSelfCareMessage actual = deserializer.deserialize("topic", null);
         assertThat(actual).isNull();
@@ -259,5 +311,95 @@ class OnboardingSelfCareMessageDeserializerTest {
                 }
                 """;
     }
+
+
+    private String inputRequestWithRootParent() {
+        return """
+                {
+                   "id": "86af8c3f-d512-44d3-855b-dc01d2c13b9f",
+                   "internalIstitutionID": "2266014e-c6e1-437e-81af-c113259f2f95",
+                   "product": "prod-pn-dev",
+                   "state": "ACTIVE",
+                   "fileName": "",
+                   "contentType": "application/json",
+                   "onboardingTokenId": "86af8c3f-d512-44d3-855b-dc01d2c13b9f",
+                   "institution": {
+                     "institutionType": "PA",
+                     "description": "Ufficio per la transizione al Digitale",
+                     "digitalAddress": "protocollo@pec.comune.aglientu.ot.it",
+                     "address": "da_indicare",
+                     "taxCode": "00255510901",
+                     "origin": "IPA",
+                     "originId": "HETFZG",
+                     "zipCode": "00100",
+                     "paymentServiceProvider": null,
+                     "istatCode": null,
+                     "city": null,
+                     "country": null,
+                     "county": null,
+                     "subUnitCode": "HETFZG",
+                     "subUnitType": "UO",
+                     "rootParent": {
+                       "id": "acb31680-55e6-4a3d-9355-b7531f55d11a",
+                       "originId": "c_h848",
+                       "description": "Comune di Aglientu"
+                     }
+                   },
+                   "billing": {
+                     "vatNumber": "00255510901",
+                     "recipientCode": "HETFZG",
+                     "publicServices": false
+                   },
+                   "createdAt": "2023-10-18T10:39:01.949686Z",
+                   "updatedAt": "2023-10-18T10:39:01.949686Z",
+                   "notificationType": "ADD"
+                 }
+                """;
+    }
+
+    private String inputRequestwithoutRootParent() {
+        return """
+                {
+                   "id": "86af8c3f-d512-44d3-855b-dc01d2c13b9f",
+                   "internalIstitutionID": "2266014e-c6e1-437e-81af-c113259f2f95",
+                   "product": "prod-pn-dev",
+                   "state": "ACTIVE",
+                   "fileName": "",
+                   "contentType": "application/json",
+                   "onboardingTokenId": "86af8c3f-d512-44d3-855b-dc01d2c13b9f",
+                   "institution": {
+                     "institutionType": "PA",
+                     "description": "Ufficio per la transizione al Digitale",
+                     "digitalAddress": "protocollo@pec.comune.aglientu.ot.it",
+                     "address": "da_indicare",
+                     "taxCode": "00255510901",
+                     "origin": "IPA",
+                     "originId": "HETFZG",
+                     "zipCode": "00100",
+                     "paymentServiceProvider": null,
+                     "istatCode": null,
+                     "city": null,
+                     "country": null,
+                     "county": null,
+                     "subUnitCode": "HETFZG",
+                     "subUnitType": "UO",
+                     "rootParent": {
+                       "id": null,
+                       "originId": null,
+                       "description": null
+                     }
+                   },
+                   "billing": {
+                     "vatNumber": "00255510901",
+                     "recipientCode": "HETFZG",
+                     "publicServices": false
+                   },
+                   "createdAt": "2023-10-18T10:39:01.949686Z",
+                   "updatedAt": "2023-10-18T10:39:01.949686Z",
+                   "notificationType": "ADD"
+                 }
+                """;
+    }
+
 
 }
