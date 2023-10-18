@@ -22,18 +22,19 @@ public class OnboardingMapper {
         entity.setZipCode(onBoardingSelfCareMessage.getZipCode());
         entity.setIpaCode(onBoardingSelfCareMessage.getInstitution().getOriginId());
         entity.setSdiCode(onBoardingSelfCareMessage.getBilling().getRecipientCode());
-        entity.setRootId(
-                ((onBoardingSelfCareMessage.getInstitution().getRootParent() == null)
-                        || (onBoardingSelfCareMessage.getInstitution().getRootParent().getId() == null)) ?
-                        onBoardingSelfCareMessage.getInternalIstitutionID() : onBoardingSelfCareMessage.getInstitution().getRootParent().getId());
-        entity.setRootDescription(
-                ((onBoardingSelfCareMessage.getInstitution().getRootParent() == null)
-                        || (onBoardingSelfCareMessage.getInstitution().getRootParent().getDescription() == null)) ?
-                        null : onBoardingSelfCareMessage.getInstitution().getRootParent().getDescription());
-        entity.setRootIpaCode(
-                ((onBoardingSelfCareMessage.getInstitution().getRootParent() == null)
-                        || (onBoardingSelfCareMessage.getInstitution().getRootParent().getOriginId() == null)) ?
-                        null : onBoardingSelfCareMessage.getInstitution().getRootParent().getOriginId());
+
+        if( onBoardingSelfCareMessage.getInstitution().getRootParent() == null ||
+                onBoardingSelfCareMessage.getInstitution().getRootParent().getId() == null ) {
+
+            entity.setRootId(onBoardingSelfCareMessage.getInternalIstitutionID());
+            entity.setRootDescription(null);
+            entity.setRootIpaCode(null);
+        } else {
+            entity.setRootId(onBoardingSelfCareMessage.getInstitution().getRootParent().getId());
+            entity.setRootDescription(onBoardingSelfCareMessage.getInstitution().getRootParent().getDescription());
+            entity.setRootIpaCode(onBoardingSelfCareMessage.getInstitution().getRootParent().getOriginId());
+        }
+
         return entity;
     }
 }
