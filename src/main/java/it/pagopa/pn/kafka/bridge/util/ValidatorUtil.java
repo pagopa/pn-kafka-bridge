@@ -20,7 +20,7 @@ public class ValidatorUtil {
     public boolean isValidOnboardingSelfCareMessage(OnboardingSelfCareMessage inputMessage) {
         Set<ConstraintViolation<OnboardingSelfCareMessage>> validateResults = validator.validate(inputMessage);
         if(! CollectionUtils.isEmpty(validateResults)) {
-            log.error("[{}] Payload received is not valid: {}", inputMessage.getId(), validateResults);
+            log.error("[{}] Payload received is not valid: {}", inputMessage.getInternalIstitutionID(), validateResults);
             return false;
         }
         return true;
