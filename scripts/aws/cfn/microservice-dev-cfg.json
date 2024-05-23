@@ -6,7 +6,7 @@
     "SelfcarePnProductId": "prod-pn-dev",
     "MaxTasksNumber": "1",
     "PnCronAnalyzer": "* */1 * * * *",
-    "WireTapLogActivation": "true",
-    "MountEfs": "true"
+    "WireTapLogActivation": "false",
+    "MountEfs": "false"
   }
 }
