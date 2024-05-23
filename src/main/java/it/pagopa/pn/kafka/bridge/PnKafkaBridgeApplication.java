@@ -1,5 +1,6 @@
 package it.pagopa.pn.kafka.bridge;
 
+import it.pagopa.pn.commons.configs.listeners.TaskIdApplicationListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +11,9 @@ public class PnKafkaBridgeApplication {
 
 
 	public static void main(String[] args) {
-		SpringApplication.run(PnKafkaBridgeApplication.class, args);
+		SpringApplication app = new SpringApplication(PnKafkaBridgeApplication.class);
+		app.addListeners(new TaskIdApplicationListener());
+		app.run(args);
 	}
 
 	@RestController
