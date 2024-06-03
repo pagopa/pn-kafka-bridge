@@ -97,6 +97,34 @@ Parameters:
     Type: String
     Description: 'Application load balancer security group'
 
+  # Logging parameters
+  WireTapLogActivation:
+    Type: String
+    Default: false
+    Description: Activation of wire logs
+    AllowedValues:
+      - true
+      - false
+
+  PnCronAnalyzer:
+    Type: String
+    Default: '-'
+    Description: Cron for which you send the metric to CloudWatch
+
+  # EFS parameters
+  FargateEFSFileSystemID:
+    Type: String
+    Description: "EFS Filesystem"
+
+  MountEfs:
+    Type: String
+    Default: false
+    AllowedValues:
+      - "true"
+      - "false"
+
+
+
   # Log group parameters
   EcsLogGroup:
     Type: String
@@ -201,6 +229,9 @@ Resources:
         AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
         MinTasksNumber: !Ref MinTasksNumber
         MaxTasksNumber: !Ref MaxTasksNumber
+        EfsFilesystem: !Ref FargateEFSFileSystemID
+        MountEfs: !Ref MountEfs
+        WireTapLogActivation: !Ref WireTapLogActivation
         AutoscalingDataPointN: !Ref AutoscalingDataPointN
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
@@ -212,6 +243,8 @@ Resources:
         ContainerEnvEntry5: !Sub 'SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=${KafkaOnboardingBootstrapServers}'
         ContainerEnvEntry6: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
         ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
+        ContainerEnvEntry8: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
+        ContainerEnvEntry9: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
         JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
