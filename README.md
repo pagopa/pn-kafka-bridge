@@ -51,7 +51,7 @@ Questi sono i passi da seguire:
       "S":"<message.institution.address>"
     },
     "created":{
-      "S":"<message.created>"
+      "S":"<message.createdAt>"
     },
     "description":{
       "S":"<message.institution.description>"
@@ -66,16 +66,28 @@ Questi sono i passi da seguire:
       "S":"<message.institution.originId>"
     },
     "lastUpdate":{
-      "S":"<message.lastUpdate>"
+      "S":"<message.updatedAt>"
     },
     "sdiCode":{
       "S":"<message.billing.recipientCode>"
     },
     "status":{
-      "S":"<message.status>"
+      "S":"<message.state>"
     },
     "taxCode":{
-      "S":"<message.billing.vatNumber>"
+      "S":"<message.billing.taxCode>"
+    },
+    "rootId":{
+      "S":"IF (message.institution.rootParent=null OR message.institution.rootParent.id=null) THEN <message.internalIstitutionID> ELSE <message.institution.rootParent.id>"
+    },
+    "rootDescription":{
+      "S":"<message.institution.rootParent.description>"
+    },
+    "rootIpaCode":{
+      "S":"<message.institution.rootParent.originId>"
+    },
+    "zipCode":{
+      "S":"<message.zipCode"
     }
     }   
     ```
