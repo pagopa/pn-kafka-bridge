@@ -13,7 +13,7 @@ public class OnboardingMapper {
         entity.setStatus(onBoardingSelfCareMessage.getState());
         entity.setCreated(onBoardingSelfCareMessage.getCreatedAt());
         entity.setLastUpdate(onBoardingSelfCareMessage.getUpdatedAt());
-        entity.setTaxCode(onBoardingSelfCareMessage.getBilling().getVatNumber());
+        entity.setTaxCode(onBoardingSelfCareMessage.getInstitution().getTaxCode());
         entity.setAddress(onBoardingSelfCareMessage.getInstitution().getAddress());
         entity.setDigitalAddress(onBoardingSelfCareMessage.getInstitution().getDigitalAddress());
         entity.setDescription(onBoardingSelfCareMessage.getInstitution().getDescription());

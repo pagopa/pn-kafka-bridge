@@ -23,7 +23,7 @@ class OnboardingMapperTest {
         assertThat(actual.getId()).isEqualTo(inputMessage.getInternalIstitutionID());
         assertThat(actual.getStatus()).isEqualTo(inputMessage.getState());
         assertThat(actual.getLastUpdate()).isEqualTo(inputMessage.getUpdatedAt());
-        assertThat(actual.getTaxCode()).isEqualTo(inputMessage.getBilling().getVatNumber());
+        assertThat(actual.getTaxCode()).isEqualTo(inputMessage.getInstitution().getTaxCode());
         assertThat(actual.getDescription()).isEqualTo(inputMessage.getInstitution().getDescription());
         assertThat(actual.getAddress()).isEqualTo(inputMessage.getInstitution().getAddress());
         assertThat(actual.getDigitalAddress()).isEqualTo(inputMessage.getInstitution().getDigitalAddress());
@@ -48,7 +48,7 @@ class OnboardingMapperTest {
         assertThat(actual.getId()).isEqualTo(inputMessage.getInternalIstitutionID());
         assertThat(actual.getStatus()).isEqualTo(inputMessage.getState());
         assertThat(actual.getLastUpdate()).isEqualTo(inputMessage.getUpdatedAt());
-        assertThat(actual.getTaxCode()).isEqualTo(inputMessage.getBilling().getVatNumber());
+        assertThat(actual.getTaxCode()).isEqualTo(inputMessage.getInstitution().getTaxCode());
         assertThat(actual.getDescription()).isEqualTo(inputMessage.getInstitution().getDescription());
         assertThat(actual.getAddress()).isEqualTo(inputMessage.getInstitution().getAddress());
         assertThat(actual.getDigitalAddress()).isEqualTo(inputMessage.getInstitution().getDigitalAddress());
