@@ -75,7 +75,7 @@ Questi sono i passi da seguire:
       "S":"<message.state>"
     },
     "taxCode":{
-      "S":"<message.billing.taxCode>"
+      "S":"<message.institution.taxCode>"
     },
     "rootId":{
       "S":"IF (message.institution.rootParent=null OR message.institution.rootParent.id=null) THEN <message.internalIstitutionID> ELSE <message.institution.rootParent.id>"

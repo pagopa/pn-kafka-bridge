@@ -30,7 +30,7 @@ public class OnboardingServiceImpl implements OnboardingService {
         String eventId = payload.getTaxCode() + "_onboarding_institution_" + payload.getId();
         return PnOnboardingInstitutionEvent.builder()
                 .header(StandardEventHeader.builder()
-                        .iun(payload.getTaxCode()) //TODO non c'è lo iun capire se obbligatorio
+                        .iun(payload.getTaxCode())
                         .eventId(eventId)
                         .createdAt(Instant.now())
                         .eventType(EventType.SEND_ONBOARDING_REQUEST.name())

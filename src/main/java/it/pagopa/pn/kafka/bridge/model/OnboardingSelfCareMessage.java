@@ -10,12 +10,12 @@ import java.time.Instant;
 @Data
 public class OnboardingSelfCareMessage {
 
-    @Valid
     private Billing billing;
     private String contentType;
     private String fileName;
     private String filePath;
     private String id;
+    @Valid
     private Institution institution;
     private String internalIstitutionID;
     private String onboardingTokenId;
@@ -29,9 +29,6 @@ public class OnboardingSelfCareMessage {
     @Data
     public static class Billing {
         private String recipientCode;
-
-        @Pattern(regexp = "^(([A-Z]{6}[0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z])|(\\d{11}))$")
-        @NotNull
         private String vatNumber;
         private Boolean publicServices;
     }
@@ -44,6 +41,9 @@ public class OnboardingSelfCareMessage {
         private String institutionType;
         private String origin;
         private String originId;
+
+        @Pattern(regexp = "^(([A-Z]{6}[0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z])|(\\d{11}))$")
+        @NotNull
         private String taxCode;
         private RootParent rootParent;
         @Data
