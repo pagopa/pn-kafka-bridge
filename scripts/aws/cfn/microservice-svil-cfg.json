@@ -1,8 +1,0 @@
-{
-  "Parameters" : {
-    "KafkaOnboardingTopicName": "sc-contracts",
-    "KafkaOnboardingGroupId": "pn-kafka-bridge-svil",
-    "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
-    "SelfcarePnProductId": "prod-pn-svil"
-  }
-}

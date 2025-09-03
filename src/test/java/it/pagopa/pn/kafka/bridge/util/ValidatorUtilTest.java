@@ -7,20 +7,20 @@ import it.pagopa.pn.kafka.bridge.service.OnboardingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 class ValidatorUtilTest {
 
-    @MockBean
+    @MockitoBean
     private OnboardingSelfCareConsumer consumer;
 
-    @MockBean
+    @MockitoBean
     private OnboardingService onboardingService;
 
-    @MockBean
+    @MockitoBean
     private SqsOnboardingProducer sqsOnboardingProducer;
 
     @Autowired

@@ -9,7 +9,7 @@ import org.springframework.kafka.listener.adapter.RecordFilterStrategy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Component
 @RequiredArgsConstructor
