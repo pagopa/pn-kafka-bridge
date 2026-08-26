@@ -12,6 +12,9 @@
 	<version>2.5.0-SNAPSHOT</version>
 	<name>pn-kafka-bridge</name>
 	<description>Demo project for Spring Boot</description>
+    <properties>
+        <java.version>25</java.version>
+    </properties>
 	<scm>
 		<connection>${git.conn}</connection>
 		<developerConnection>${git.devConn}</developerConnection>
