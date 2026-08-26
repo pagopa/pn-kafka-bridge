@@ -253,7 +253,8 @@ Resources:
         ContainerEnvEntry10: !Sub 'SPRING_KAFKA_CONSUMER_AUTO_COMMIT_INTERVAL=${KafkaBridgeAutoCommitIntervalMillis}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
-        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50'
+        JavaToolOptions: '-Dreactor.netty.ioWorkerCount=50 --add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED'
+        JavaVersion: '25'
         MappedPaths: '/kafka-bridge/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref VpcEgressSubnetsIds
