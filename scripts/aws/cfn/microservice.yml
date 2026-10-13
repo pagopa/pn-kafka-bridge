@@ -128,7 +128,21 @@ Parameters:
       - "true"
       - "false"
 
+  KafkaBridgePaymentsQueueName:
+    Type: String
+    Description: 'Name of the queue containing payments from pagoPa'
 
+  KafkaBridgePaymentsQueueARN:
+    Type: String
+    Description: 'Send and pull pagoPa payments to this queue'
+
+  KafkaBridgePaymentsQueueAlarmARN:
+    Type: String
+    Description: kafka bridge payments queue dlq alarm ARN
+
+  KafkaBridgePaymentsQueueAgeAlarmARN:
+    Type: String
+    Description: kafka bridge payments queue age alarm ARN
 
   # Log group parameters
   EcsLogGroup:
@@ -299,6 +313,7 @@ Resources:
               - sqs:SendMessageBatch
             Resource:
               - !Ref KafkaBridgeOnboardingQueueARN
+              - !Ref KafkaBridgePaymentsQueueARN
 
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
