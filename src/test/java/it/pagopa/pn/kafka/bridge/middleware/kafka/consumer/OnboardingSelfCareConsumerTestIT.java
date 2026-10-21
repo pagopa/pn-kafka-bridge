@@ -17,16 +17,20 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 
 import java.util.concurrent.ExecutionException;
 
 
 @SpringBootTest(properties = {
-        "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092",
+        "pn.kafka-bridge.onboarding-contracts.bootstrap-servers=PLAINTEXT://localhost:9092",
         "spring.kafka.consumer.auto-offset-reset=earliest",
         "pn.kafka-bridge.onboarding-group-id=consumer-test",
         "spring.kafka.consumer.properties.security.protocol=PLAINTEXT",
-        "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev"
+        "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev",
+        "pn.kafka-bridge.payment-events.concurrency=1",
+        "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092",
 })
 @EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
 class OnboardingSelfCareConsumerTestIT {
@@ -36,6 +40,12 @@ class OnboardingSelfCareConsumerTestIT {
 
     @SpyBean
     private OnboardingSelfCareConsumer consumer;
+
+    @MockitoBean
+    private SqsAsyncClient sqsAsyncClient;
+
+    @MockitoBean
+    private PagoPaPaymentConsumer pagoPaPaymentConsumer;
 
     @SpyBean
     private OnboardingService onboardingService;

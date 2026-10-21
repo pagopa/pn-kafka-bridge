@@ -144,6 +144,22 @@ Parameters:
     Type: String
     Description: kafka bridge payments queue age alarm ARN
 
+  KafkaBridgePaymentsQueueDLQName:
+    Type: String
+    Description: kafka bridge payments dlq queue name
+
+  KafkaBridgePaymentsQueueDLQARN:
+    Type: String
+    Description: kafka bridge payments dlq queue ARN
+
+  NoticePaymentInputQueueName:
+    Type: String
+    Description: 'Queue name of Kafka bridge messages for notice payment'
+
+  NoticePaymentInputQueueARN:
+    Type: String
+    Description: 'Queue name of Kafka bridge messages for notice payment'
+
   # Log group parameters
   EcsLogGroup:
     Type: String
@@ -300,6 +316,8 @@ Resources:
         ContainerEnvEntry12: !Sub 'KAFKA_PAYMENT_FETCH_MIN_BYTES=${kafkaPaymentFetchMinBytes}'
         ContainerEnvEntry13: !Sub 'KAFKA_PAYMENT_FETCH_MAX_WAIT_MS=${kafkaPaymentFetchMaxWaitMs}'
         ContainerEnvEntry14: !Sub 'KAFKA_PAYMENT_CONCURRENCY=${kafkaPaymentConcurrency}'
+        ContainerEnvEntry15: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_NOTICEPAYMENTINPUT=${NoticePaymentInputQueueName}'
+        ContainerEnvEntry16: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_ERROREVENTINPUT=${KafkaBridgePaymentsQueueDLQName}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
         JavaToolOptions: !Ref JavaToolOptions
@@ -338,6 +356,8 @@ Resources:
             Resource:
               - !Ref KafkaBridgeOnboardingQueueARN
               - !Ref KafkaBridgePaymentsQueueARN
+              - !Ref KafkaBridgePaymentsQueueDLQARN
+              - !Ref NoticePaymentInputQueueARN
 
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
