@@ -78,3 +78,9 @@ Outputs:
   KafkaBridgePaymentsQueueAgeAlarmARN:
     Value: !GetAtt KafkaBridgePaymentsQueue.Outputs.SqsAgeAlarmArn
     Description: pn-kafka-bridge payments queue age alarm ARN
+  KafkaBridgePaymentsQueueDLQName:
+    Value: !GetAtt KafkaBridgePaymentsQueue.Outputs.DeadLetterQueueName
+    Description: pn-kafka-bridge payments queue dlq name
+  KafkaBridgePaymentsQueueDLQARN:
+    Value: !GetAtt KafkaBridgePaymentsQueue.Outputs.DeadLetterQueueARN
+    Description: pn-kafka-bridge payments queue dlq name

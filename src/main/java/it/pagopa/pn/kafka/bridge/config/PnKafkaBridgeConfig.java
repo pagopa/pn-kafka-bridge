@@ -27,6 +27,8 @@ public class PnKafkaBridgeConfig {
     @Data
     public static class SqsTopics {
         private String onboardingInput;
+        private String noticePaymentInput;
+        private String errorEventInput;
     }
 
 }
