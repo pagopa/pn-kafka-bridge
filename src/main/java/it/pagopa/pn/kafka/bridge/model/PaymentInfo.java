@@ -9,6 +9,7 @@ public class PaymentInfo {
     private Instant dueDate;
     private String totalNotice;
     private String paymentChannel;
+    private Instant paymentDateTime;
     private Integer amount;
     private Integer fee;
 }
