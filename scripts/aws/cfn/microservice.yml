@@ -160,6 +160,14 @@ Parameters:
     Type: String
     Description: 'Queue name of Kafka bridge messages for notice payment'
 
+  PaymentsToVerifyQueueName:
+    Type: String
+    Description: pn-kafka-bridge payments to verify queue name
+
+  PaymentsToVerifyQueueARN:
+    Type: String
+    Description: pn-kafka-bridge payments to verify queue ARN
+
   # Log group parameters
   EcsLogGroup:
     Type: String
@@ -318,6 +326,8 @@ Resources:
         ContainerEnvEntry14: !Sub 'KAFKA_PAYMENT_CONCURRENCY=${kafkaPaymentConcurrency}'
         ContainerEnvEntry15: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_NOTICEPAYMENTINPUT=${NoticePaymentInputQueueName}'
         ContainerEnvEntry16: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_ERROREVENTINPUT=${KafkaBridgePaymentsQueueDLQName}'
+        ContainerEnvEntry17: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_KAFKABRIDGEPAYMENTS=${KafkaBridgePaymentsQueueName}'
+        ContainerEnvEntry18: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_PAYMENTSTOVERIFY=${PaymentsToVerifyQueueName}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
         JavaToolOptions: !Ref JavaToolOptions
@@ -358,6 +368,7 @@ Resources:
               - !Ref KafkaBridgePaymentsQueueARN
               - !Ref KafkaBridgePaymentsQueueDLQARN
               - !Ref NoticePaymentInputQueueARN
+              - !Ref PaymentsToVerifyQueueARN
 
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
@@ -371,9 +382,12 @@ Resources:
           - - !GetAtt KafkaBridgeMicroservice.Outputs.FatalLogsMetricAlarmArn
             - !Ref KafkaBridgeOnboardingQueueAlarmARN
             - !Ref KafkaBridgeOnboardingQueueAgeAlarmARN
+            - !Ref KafkaBridgePaymentsQueueAlarmARN
+            - !Ref KafkaBridgePaymentsQueueAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref KafkaBridgeOnboardingQueueARN
+            - !Ref KafkaBridgePaymentsQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-kafka-bridge'

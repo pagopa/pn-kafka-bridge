@@ -29,6 +29,8 @@ public class PnKafkaBridgeConfig {
         private String onboardingInput;
         private String noticePaymentInput;
         private String errorEventInput;
+        private String kafkaBridgePayments;
+        private String paymentsToVerify;
     }
 
 }

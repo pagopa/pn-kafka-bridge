@@ -54,6 +54,7 @@ public class PagoPaPaymentMapper {
                         .creditorTaxId(creditor.getIdPA())
                         .creditorCompanyName(creditor.getCompanyName())
                         .paymentId(message.getId())
+                        //TODO è corretto?
                         .paymentDateTime(message.getTimestamp())
                         .dueDate(paymentInfo.getDueDate())
                         .totalNotice(paymentInfo.getTotalNotice() == null
