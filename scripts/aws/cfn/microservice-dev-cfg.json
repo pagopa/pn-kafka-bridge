@@ -7,6 +7,10 @@
     "MaxTasksNumber": "1",
     "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false",
-    "MountEfs": "false"
+    "MountEfs": "false",
+    "kafkaPaymentMaxPollRecords": 200,
+    "kafkaPaymentFetchMinBytes": 256000,
+    "kafkaPaymentFetchMaxWaitMs": 10000,
+    "kafkaPaymentConcurrency": 1
   }
 }
