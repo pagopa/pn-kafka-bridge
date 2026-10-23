@@ -25,6 +25,21 @@ Parameters:
     Description: 'Kafka bootstrap servers'
     Default: ''
 
+  KafkaPaymentEventsTopicName:
+    Type: String
+    Description: 'Kafka topic name for payment events'
+    Default: ''
+
+  KafkaPaymentEventsGroupId:
+    Type: String
+    Description: 'Kafka group id for payment events'
+    Default: ''
+
+  KafkaPaymentEventsBootstrapServers:
+    Type: String
+    Description: 'Kafka server for payment events'
+    Default: ''
+
   SelfcarePnProductId:
     Type: String
     Description: 'Selfcare product id'
@@ -316,9 +331,13 @@ Resources:
         ContainerEnvEntry12: !Sub 'KAFKA_PAYMENT_FETCH_MIN_BYTES=${kafkaPaymentFetchMinBytes}'
         ContainerEnvEntry13: !Sub 'KAFKA_PAYMENT_FETCH_MAX_WAIT_MS=${kafkaPaymentFetchMaxWaitMs}'
         ContainerEnvEntry14: !Sub 'KAFKA_PAYMENT_CONCURRENCY=${kafkaPaymentConcurrency}'
-        ContainerEnvEntry15: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_NOTICEPAYMENTINPUT=${NoticePaymentInputQueueName}'
-        ContainerEnvEntry16: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_ERROREVENTINPUT=${KafkaBridgePaymentsQueueDLQName}'
+        ContainerEnvEntry15: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_TOPIC_NAME=${KafkaPaymentEventsTopicName}'
+        ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_GROUP_ID=${KafkaPaymentEventsGroupId}'
+        ContainerEnvEntry17: !Sub 'KAFKA_PAYMENT_BOOTSTRAP_SERVERS=${KafkaPaymentEventsBootstrapServers}'
+        ContainerEnvEntry18: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_NOTICEPAYMENTINPUT=${NoticePaymentInputQueueName}'
+        ContainerEnvEntry19: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_ERROREVENTINPUT=${KafkaBridgePaymentsQueueDLQName}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
+        ContainerSecret2: !Sub 'KAFKA_PAYMENT_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaPaymentEventsSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
         JavaToolOptions: !Ref JavaToolOptions
         JavaVersion: '25'
