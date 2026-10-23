@@ -64,7 +64,8 @@ public class PagoPaPaymentConsumer {
             payment.setPagopaPublishedTimestamp(Instant.ofEpochMilli(message.timestamp()));
             return payment;
         } catch (JacksonException e) {
-            log.error("Error deserializing message: {}", message.value(), e);
+            log.error("Error deserializing payment record from topic {} partition {} at offset {} ({})",
+                    message.topic(), message.partition(), message.offset(), e.getClass().getSimpleName());
             return null;
         }
     }
