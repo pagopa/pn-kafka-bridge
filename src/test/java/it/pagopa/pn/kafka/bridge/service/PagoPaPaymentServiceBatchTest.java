@@ -68,6 +68,7 @@ class PagoPaPaymentServiceBatchTest {
         message.getPaymentInfo().setPaymentChannel("channel");
         message.getPaymentInfo().setAmount(1000);
         message.getPaymentInfo().setFee(50);
+        message.getPaymentInfo().setPaymentDateTime(Instant.parse("2026-10-20T08:01:00Z"));
         Instant ingestionTimestamp = Instant.parse("2026-10-20T08:02:00Z");
 
         service.sendMessage(List.of(message), ingestionTimestamp);
@@ -81,7 +82,7 @@ class PagoPaPaymentServiceBatchTest {
                 .creditorTaxId("12345678901").creditorCompanyName("creditor")
                 .paymentId("payment-id").paymentDateTime(message.getTimestamp())
                 .dueDate(message.getPaymentInfo().getDueDate()).totalNotice(2)
-                .paymentSourceChannel("channel").amount(1000).fee("50")
+                .paymentSourceChannel("channel").amount(1000).fee("50").paymentDateTime(Instant.parse("2026-10-20T08:01:00Z"))
                 .pagopaPublishedTimestamp(message.getPagopaPublishedTimestamp())
                 .sendIngestionTimestamp(ingestionTimestamp).build(), event.getPayload());
         verifyNoInteractions(errorEvent);

@@ -9,6 +9,8 @@ import it.pagopa.pn.kafka.bridge.mapper.PagoPaPaymentMapper;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsErrorEventProducer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsNoticePaymentProducer;
 import it.pagopa.pn.kafka.bridge.service.PagoPaPaymentServiceImpl;
+import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
+import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.common.header.internals.RecordHeaders;
@@ -44,16 +46,19 @@ class PagoPaPaymentFlowTest {
 
     @Mock
     private SqsClient sqsClient;
+    @Mock
+    private ValidatorUtil validatorUtil;
 
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
     private PagoPaPaymentConsumer consumer;
 
     @BeforeEach
     void setUp() {
+        lenient().when(validatorUtil.isValidPaymentMessage(any(PagoPaPaymentMessage.class))).thenReturn(true);
         consumer = new PagoPaPaymentConsumer(new PagoPaPaymentServiceImpl(
                 new SqsErrorEventProducer(sqsClient, ERROR_QUEUE, objectMapper),
                 new SqsNoticePaymentProducer(sqsClient, PAYMENT_QUEUE, objectMapper),
-                objectMapper, new PagoPaPaymentMapper()), objectMapper);
+                objectMapper, new PagoPaPaymentMapper()), validatorUtil, objectMapper);
     }
 
     @Test
@@ -62,7 +67,7 @@ class PagoPaPaymentFlowTest {
         String malformed = "{invalid-json";
         Instant before = Instant.now();
 
-        consumer.listen(TOPIC, List.of(record(0, validPayment(0)), record(1, malformed),
+        consumer.listen(List.of(record(0, validPayment(0)), record(1, malformed),
                 record(2, validPayment(2))));
 
         Instant after = Instant.now();
@@ -105,7 +110,7 @@ class PagoPaPaymentFlowTest {
     void sendsTwentyThreeValidPaymentsInBatchesOfTenTenAndThree() throws Exception {
         successfulSqs();
 
-        consumer.listen(TOPIC, IntStream.range(0, 23)
+        consumer.listen(IntStream.range(0, 23)
                 .mapToObj(index -> record(index, validPayment(index))).toList());
 
         List<SendMessageBatchRequest> requests = requests(3);
@@ -126,7 +131,7 @@ class PagoPaPaymentFlowTest {
         successfulSqs();
         List<String> bodies = IntStream.range(0, 23).mapToObj(index -> "{invalid-" + index).toList();
 
-        consumer.listen(TOPIC, IntStream.range(0, bodies.size())
+        consumer.listen(IntStream.range(0, bodies.size())
                 .mapToObj(index -> record(index, bodies.get(index))).toList());
 
         List<SendMessageBatchRequest> requests = requests(3);
@@ -146,7 +151,7 @@ class PagoPaPaymentFlowTest {
         successfulSqs();
         String malformed = "\u00e8".repeat(300_000);
 
-        consumer.listen(TOPIC, List.of(record(0, malformed), record(1, malformed)));
+        consumer.listen(List.of(record(0, malformed), record(1, malformed)));
 
         for (SendMessageBatchRequest request : requests(2)) {
             assertEquals(QUEUE_URL_PREFIX + ERROR_QUEUE, request.queueUrl());
@@ -161,7 +166,7 @@ class PagoPaPaymentFlowTest {
     void skipsOversizedMalformedMessageButStillSendsOtherRecords() throws Exception {
         successfulSqs();
 
-        consumer.listen(TOPIC, List.of(record(0, "x".repeat(MAX_BATCH_BYTES)),
+        consumer.listen(List.of(record(0, "x".repeat(MAX_BATCH_BYTES)),
                 record(1, "{invalid"), record(2, validPayment(2))));
 
         List<SendMessageBatchRequest> requests = requests(2);
@@ -174,14 +179,14 @@ class PagoPaPaymentFlowTest {
 
     @Test
     void emptyPollDoesNotAccessSqs() {
-        consumer.listen(TOPIC, List.of());
+        consumer.listen(List.of());
 
         verifyNoInteractions(sqsClient);
     }
 
     @Test
     void onlyOversizedMalformedMessagesDoNotAccessSqs() {
-        consumer.listen(TOPIC, List.of(record(0, "x".repeat(MAX_BATCH_BYTES))));
+        consumer.listen(List.of(record(0, "x".repeat(MAX_BATCH_BYTES))));
 
         verifyNoInteractions(sqsClient);
     }
@@ -191,7 +196,7 @@ class PagoPaPaymentFlowTest {
         ConsumerRecord<String, String> record = new ConsumerRecord<>(TOPIC, 0, 0, -1,
                 TimestampType.NO_TIMESTAMP_TYPE, -1, -1, "key", validPayment(0), new RecordHeaders(), Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> consumer.listen(TOPIC, List.of(record)));
+        assertThrows(IllegalArgumentException.class, () -> consumer.listen(List.of(record)));
 
         verifyNoInteractions(sqsClient);
     }
@@ -201,7 +206,7 @@ class PagoPaPaymentFlowTest {
         String invalid = validPayment(1).replace("\"totalNotice\": \"2\"", "\"totalNotice\": \"invalid\"");
 
         assertThrows(NumberFormatException.class,
-                () -> consumer.listen(TOPIC, List.of(record(0, validPayment(0)), record(1, invalid))));
+                () -> consumer.listen(List.of(record(0, validPayment(0)), record(1, invalid))));
 
         verifyNoInteractions(sqsClient);
     }
@@ -214,7 +219,7 @@ class PagoPaPaymentFlowTest {
         when(sqsClient.sendMessageBatch(any(SendMessageBatchRequest.class))).thenThrow(failure);
 
         assertSame(failure, assertThrows(SqsException.class,
-                () -> consumer.listen(TOPIC, List.of(record(0, validPayment(0))))));
+                () -> consumer.listen(List.of(record(0, validPayment(0))))));
         verify(sqsClient).sendMessageBatch(any(SendMessageBatchRequest.class));
     }
 
@@ -226,7 +231,7 @@ class PagoPaPaymentFlowTest {
         when(sqsClient.sendMessageBatch(any(SendMessageBatchRequest.class))).thenThrow(failure);
 
         assertSame(failure, assertThrows(SqsException.class,
-                () -> consumer.listen(TOPIC, List.of(record(0, "{invalid"), record(1, validPayment(1))))));
+                () -> consumer.listen(List.of(record(0, "{invalid"), record(1, validPayment(1))))));
 
         assertEquals(QUEUE_URL_PREFIX + ERROR_QUEUE, requests(1).get(0).queueUrl());
         verify(sqsClient, times(1)).getQueueUrl(any(GetQueueUrlRequest.class));
