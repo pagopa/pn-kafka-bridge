@@ -3,10 +3,17 @@
     "KafkaOnboardingTopicName": "sc-contracts",
     "KafkaOnboardingGroupId": "pn-kafka-bridge-dev",
     "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
+    "KafkaPaymentEventsTopicName": "sc-contracts",
+    "KafkaPaymentEventsGroupId": "pn-kafka-bridge-dev",
+    "KafkaPaymentEventsBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
     "SelfcarePnProductId": "prod-pn-dev",
     "MaxTasksNumber": "1",
     "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false",
-    "MountEfs": "false"
+    "MountEfs": "false",
+    "kafkaPaymentMaxPollRecords": 200,
+    "kafkaPaymentFetchMinBytes": 256000,
+    "kafkaPaymentFetchMaxWaitMs": 10000,
+    "kafkaPaymentConcurrency": 1
   }
 }
