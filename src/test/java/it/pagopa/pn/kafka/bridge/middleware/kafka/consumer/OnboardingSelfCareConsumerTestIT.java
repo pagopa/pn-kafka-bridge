@@ -25,9 +25,9 @@ import java.util.concurrent.ExecutionException;
 
 @SpringBootTest(properties = {
         "pn.kafka-bridge.onboarding-contracts.bootstrap-servers=PLAINTEXT://localhost:9092",
-        "spring.kafka.consumer.auto-offset-reset=earliest",
-        "pn.kafka-bridge.onboarding-group-id=consumer-test",
-        "spring.kafka.consumer.properties.security.protocol=PLAINTEXT",
+        "pn.kafka-bridge.onboarding-contracts.properties.auto.offset.reset=earliest",
+        "pn.kafka-bridge.onboarding-contracts.group-id=consumer-test",
+        "pn.kafka-bridge.onboarding-contracts.properties.security.protocol=PLAINTEXT",
         "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev",
         "pn.kafka-bridge.payment-events.concurrency=1",
         "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092",
