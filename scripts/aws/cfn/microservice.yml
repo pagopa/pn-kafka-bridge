@@ -25,6 +25,21 @@ Parameters:
     Description: 'Kafka bootstrap servers'
     Default: ''
 
+  KafkaPaymentEventsTopicName:
+    Type: String
+    Description: 'Kafka topic name for payment events'
+    Default: ''
+
+  KafkaPaymentEventsGroupId:
+    Type: String
+    Description: 'Kafka group id for payment events'
+    Default: ''
+
+  KafkaPaymentEventsBootstrapServers:
+    Type: String
+    Description: 'Kafka server for payment events'
+    Default: ''
+
   SelfcarePnProductId:
     Type: String
     Description: 'Selfcare product id'
@@ -128,7 +143,21 @@ Parameters:
       - "true"
       - "false"
 
+  KafkaBridgePaymentsQueueName:
+    Type: String
+    Description: 'Name of the queue containing payments from pagoPa'
 
+  KafkaBridgePaymentsQueueARN:
+    Type: String
+    Description: 'Send and pull pagoPa payments to this queue'
+
+  KafkaBridgePaymentsQueueAlarmARN:
+    Type: String
+    Description: kafka bridge payments queue dlq alarm ARN
+
+  KafkaBridgePaymentsQueueAgeAlarmARN:
+    Type: String
+    Description: kafka bridge payments queue age alarm ARN
 
   # Log group parameters
   EcsLogGroup:
@@ -225,6 +254,26 @@ Parameters:
     Default: '-Dreactor.netty.ioWorkerCount=50 --add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED'
     Description: Java tool options for the Fargate tasks
 
+  kafkaPaymentMaxPollRecords:
+    Type: Number
+    Default: 200
+    Description: Max poll for payments records
+
+  kafkaPaymentFetchMinBytes:
+    Type: Number
+    Default: 256000
+    Description: Minimum fetch bytes for payments records
+
+  kafkaPaymentFetchMaxWaitMs:
+    Type: Number
+    Default: 10000
+    Description: Maximum wait time in milliseconds for fetching payments records
+
+  kafkaPaymentConcurrency:
+    Type: Number
+    Default: 1
+    Description: Concurrency level for processing payments records
+
 Resources:
 
   # PN-Kafka-Bridge microservice
@@ -262,7 +311,15 @@ Resources:
         ContainerEnvEntry8: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry9: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         ContainerEnvEntry10: !Sub 'SPRING_KAFKA_CONSUMER_AUTO_COMMIT_INTERVAL=${KafkaBridgeAutoCommitIntervalMillis}'
+        ContainerEnvEntry11: !Sub 'KAFKA_PAYMENT_MAX_POLL_RECORDS=${kafkaPaymentMaxPollRecords}'
+        ContainerEnvEntry12: !Sub 'KAFKA_PAYMENT_FETCH_MIN_BYTES=${kafkaPaymentFetchMinBytes}'
+        ContainerEnvEntry13: !Sub 'KAFKA_PAYMENT_FETCH_MAX_WAIT_MS=${kafkaPaymentFetchMaxWaitMs}'
+        ContainerEnvEntry14: !Sub 'KAFKA_PAYMENT_CONCURRENCY=${kafkaPaymentConcurrency}'
+        ContainerEnvEntry15: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_TOPIC_NAME=${KafkaPaymentEventsTopicName}'
+        ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_GROUP_ID=${KafkaPaymentEventsGroupId}'
+        ContainerEnvEntry17: !Sub 'KAFKA_PAYMENT_BOOTSTRAP_SERVERS=${KafkaPaymentEventsBootstrapServers}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
+        ContainerSecret2: !Sub 'KAFKA_PAYMENT_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaPaymentEventsSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
         JavaToolOptions: !Ref JavaToolOptions
         JavaVersion: '25'
@@ -299,6 +356,7 @@ Resources:
               - sqs:SendMessageBatch
             Resource:
               - !Ref KafkaBridgeOnboardingQueueARN
+              - !Ref KafkaBridgePaymentsQueueARN
 
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
