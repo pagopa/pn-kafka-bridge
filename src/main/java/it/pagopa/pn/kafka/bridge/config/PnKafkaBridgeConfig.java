@@ -39,7 +39,6 @@ public class PnKafkaBridgeConfig {
         private String topicName;
         private String groupId;
         private String queueName;
-        private boolean enabled;
         @ToString.Exclude
         private String saslJaasPassword;
     }

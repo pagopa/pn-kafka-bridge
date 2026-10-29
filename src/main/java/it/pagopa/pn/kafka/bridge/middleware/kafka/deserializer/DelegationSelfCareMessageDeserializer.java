@@ -4,14 +4,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.pn.kafka.bridge.model.DelegationSelfCareMessage;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
-@Slf4j
+@CustomLog
 public class DelegationSelfCareMessageDeserializer implements Deserializer<DelegationSelfCareMessage> {
 
     private static final String GENERIC_PRODUCT_PN = "prod-pn-";

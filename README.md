@@ -43,11 +43,9 @@ Kafka configuration is per flow: bootstrap servers and common consumer propertie
 | `pn.kafka-bridge.delegations.group-id` | `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID` | delegations |
 | `pn.kafka-bridge.delegations.queue-name` | `PN_KAFKA_BRIDGE_DELEGATIONS_QUEUE_NAME` | delegations |
 | `pn.kafka-bridge.delegations.sasl-jaas-password` | `KAFKA_DELEGATIONS_SASL_JAAS_PASSWORD` | delegations |
-| `pn.kafka-bridge.delegations.enabled` | `PN_KAFKA_BRIDGE_DELEGATIONS_ENABLED` | delegations |
 
-The delegations listener is started only if `pn.kafka-bridge.delegations.enabled` is `true` (default `false`, CloudFormation parameter `KafkaDelegationsEnabled`), so that the service can be deployed before SelfCare enables the PN key and the consumer group on the topic. \
-Before the deploy, the key `KafkaDelegationsSaslJaasConfig` must exist in the secret `pn-KafkaBridge-Secrets` and the queue `<ProjectName>-kafka_bridge_delegations` must exist. \
-The parameter `KafkaDelegationsGroupId` (environment variable `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID`) must be set to the consumer group authorized by SelfCare before setting `KafkaDelegationsEnabled=true`: with an empty group id the listener would use its own id as group.
+Before the deploy, SelfCare must enable the PN key and the consumer group on the topic, the key `KafkaDelegationsSaslJaasConfig` must exist in the secret `pn-KafkaBridge-Secrets` and the queue `<ProjectName>-kafka_bridge_delegations` must exist. \
+The parameter `KafkaDelegationsGroupId` (environment variable `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID`) must be set to the consumer group authorized by SelfCare: with an empty group id the listener would use its own id as group.
 
 ### Troubleshooting
 

@@ -31,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.kafka.consumer.auto-offset-reset=earliest",
         "spring.kafka.consumer.properties.security.protocol=PLAINTEXT",
         "pn.kafka-bridge.onboarding-group-id=delegations-it-onboarding",
-        "pn.kafka-bridge.delegations.enabled=true",
         "pn.kafka-bridge.delegations.topic-name=sc-delegations",
         "pn.kafka-bridge.delegations.group-id=delegations-it-consumer",
         "pn.kafka-bridge.delegations.queue-name=local-delegations",

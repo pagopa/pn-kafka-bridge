@@ -8,14 +8,14 @@ import it.pagopa.pn.api.dto.events.PnPtDelegationPayload;
 import it.pagopa.pn.api.dto.events.StandardEventHeader;
 import it.pagopa.pn.kafka.bridge.mapper.DelegationMapper;
 import it.pagopa.pn.kafka.bridge.model.DelegationSelfCareMessage;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
 @Service
-@Slf4j
+@CustomLog
 @RequiredArgsConstructor
 public class DelegationServiceImpl implements DelegationService {
 

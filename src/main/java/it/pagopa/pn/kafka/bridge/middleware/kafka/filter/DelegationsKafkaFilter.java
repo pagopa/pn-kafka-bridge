@@ -3,8 +3,8 @@ package it.pagopa.pn.kafka.bridge.middleware.kafka.filter;
 import it.pagopa.pn.kafka.bridge.config.PnKafkaBridgeConfig;
 import it.pagopa.pn.kafka.bridge.model.DelegationSelfCareMessage;
 import jakarta.annotation.PostConstruct;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.listener.adapter.RecordFilterStrategy;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,7 @@ import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
+@CustomLog
 public class DelegationsKafkaFilter implements RecordFilterStrategy<Object, DelegationSelfCareMessage> {
 
     private static final String PT_DELEGATION_TYPE = "PT";

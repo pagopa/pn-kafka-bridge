@@ -22,6 +22,7 @@ public class OnboardingSelfCareConsumer {
 
     @KafkaListener(
             id = "${pn.kafka-bridge.onboarding-group-id}",
+            groupId = "${pn.kafka-bridge.onboarding.group-id}",
             topics = "${pn.kafka-bridge.onboarding.topic-name}",
             containerFactory = "onboardingKafkaListenerContainerFactory",
             filter = "onboardingKafkaFilter",

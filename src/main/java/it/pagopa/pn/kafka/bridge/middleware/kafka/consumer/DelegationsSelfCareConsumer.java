@@ -3,8 +3,8 @@ package it.pagopa.pn.kafka.bridge.middleware.kafka.consumer;
 import it.pagopa.pn.kafka.bridge.model.DelegationSelfCareMessage;
 import it.pagopa.pn.kafka.bridge.service.DelegationService;
 import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -12,7 +12,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 @Component
-@Slf4j
+@CustomLog
 @RequiredArgsConstructor
 public class DelegationsSelfCareConsumer {
 
@@ -26,7 +26,6 @@ public class DelegationsSelfCareConsumer {
             topics = "${pn.kafka-bridge.delegations.topic-name}",
             containerFactory = "delegationsKafkaListenerContainerFactory",
             filter = "delegationsKafkaFilter",
-            autoStartup = "${pn.kafka-bridge.delegations.enabled}",
             properties = {
                     "value.deserializer=it.pagopa.pn.kafka.bridge.middleware.kafka.deserializer.DelegationSelfCareMessageDeserializer"
             }
