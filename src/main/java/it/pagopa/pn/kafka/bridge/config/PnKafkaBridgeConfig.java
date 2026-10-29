@@ -19,14 +19,29 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Import(SharedAutoConfiguration.class)
 public class PnKafkaBridgeConfig {
 
-    private SqsTopics sqsTopics;
-
     private String selfcarePnProductId;
 
+    private Onboarding onboarding = new Onboarding();
+
+    private Delegations delegations = new Delegations();
 
     @Data
-    public static class SqsTopics {
-        private String onboardingInput;
+    public static class Onboarding {
+        private String topicName;
+        private String groupId;
+        private String queueName;
+        @ToString.Exclude
+        private String saslJaasPassword;
+    }
+
+    @Data
+    public static class Delegations {
+        private String topicName;
+        private String groupId;
+        private String queueName;
+        private boolean enabled;
+        @ToString.Exclude
+        private String saslJaasPassword;
     }
 
 }
