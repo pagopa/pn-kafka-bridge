@@ -31,7 +31,8 @@ The bridge also consumes the SelfCare delegations topic (`sc-delegations`, same 
 * Validation: the mandatory fields of the SelfCare event (`delegationId`, `type`, `productId`, `status`, `id`, `createdAt`, `from`, `institutionFromName`, `fromTaxCode`, `fromType`, `to`, `institutionToName`, `toTaxCode`, `toType`) are checked; an invalid event is logged as error and not published.
 * Message header: `iun` is the `delegationId`, `eventId` is `<delegationId>_<sourceEventId>`, `eventType` is `PT_DELEGATION_CHANGED`, `publisher` is `KAFKA_BRIDGE`.
 
-Kafka configuration is per flow: bootstrap servers and common consumer properties are shared, while topic, group id, queue and SASL credential are specific to each flow.
+Kafka configuration is per flow: bootstrap servers and common consumer properties are shared, while topic, group id, queue and SASL credential are specific to each flow. \
+The group id is used as `id` of the `@KafkaListener`, so it is also the consumer group: the two flows must have different values, otherwise the application does not start.
 
 | Property | Environment variable | Flow |
 |---|---|---|
@@ -45,7 +46,7 @@ Kafka configuration is per flow: bootstrap servers and common consumer propertie
 | `pn.kafka-bridge.delegations.sasl-jaas-password` | `KAFKA_DELEGATIONS_SASL_JAAS_PASSWORD` | delegations |
 
 Before the deploy, SelfCare must enable the PN key and the consumer group on the topic, the key `KafkaDelegationsSaslJaasConfig` must exist in the secret `pn-KafkaBridge-Secrets` and the queue `<ProjectName>-kafka_bridge_delegations` must exist. \
-The parameter `KafkaDelegationsGroupId` (environment variable `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID`) must be set to the consumer group authorized by SelfCare: with an empty group id the listener would use its own id as group.
+The parameter `KafkaDelegationsGroupId` (environment variable `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID`) has no default and must be set to the consumer group authorized by SelfCare, otherwise the stack deploy fails.
 
 ### Troubleshooting
 

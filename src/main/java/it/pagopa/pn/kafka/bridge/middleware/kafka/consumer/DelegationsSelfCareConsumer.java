@@ -21,8 +21,7 @@ public class DelegationsSelfCareConsumer {
     private final ValidatorUtil validatorUtil;
 
     @KafkaListener(
-            id = "delegationsSelfCareListener",
-            groupId = "${pn.kafka-bridge.delegations.group-id}",
+            id = "${pn.kafka-bridge.delegations.group-id}",
             topics = "${pn.kafka-bridge.delegations.topic-name}",
             containerFactory = "delegationsKafkaListenerContainerFactory",
             filter = "delegationsKafkaFilter",

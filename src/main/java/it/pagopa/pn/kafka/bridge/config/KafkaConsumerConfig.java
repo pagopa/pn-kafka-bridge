@@ -1,7 +1,6 @@
 package it.pagopa.pn.kafka.bridge.config;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.ssl.SslBundles;
@@ -27,12 +26,12 @@ public class KafkaConsumerConfig {
 
     Map<String, Object> onboardingConsumerProperties() {
         PnKafkaBridgeConfig.Onboarding onboarding = pnKafkaBridgeConfig.getOnboarding();
-        return consumerProperties(onboarding.getGroupId(), onboarding.getSaslJaasPassword());
+        return consumerProperties(onboarding.getSaslJaasPassword());
     }
 
     Map<String, Object> delegationsConsumerProperties() {
         PnKafkaBridgeConfig.Delegations delegations = pnKafkaBridgeConfig.getDelegations();
-        return consumerProperties(delegations.getGroupId(), delegations.getSaslJaasPassword());
+        return consumerProperties(delegations.getSaslJaasPassword());
     }
 
     @Bean
@@ -55,9 +54,8 @@ public class KafkaConsumerConfig {
         return factory;
     }
 
-    private Map<String, Object> consumerProperties(String groupId, String saslJaasPassword) {
+    private Map<String, Object> consumerProperties(String saslJaasPassword) {
         Map<String, Object> properties = kafkaProperties.buildConsumerProperties(sslBundles);
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.put(SASL_JAAS_CONFIG, String.format(JAAS_TEMPLATE, saslJaasPassword));
         return properties;
     }

@@ -21,8 +21,7 @@ public class OnboardingSelfCareConsumer {
     private final ValidatorUtil validatorUtil;
 
     @KafkaListener(
-            id = "${pn.kafka-bridge.onboarding-group-id}",
-            groupId = "${pn.kafka-bridge.onboarding.group-id}",
+            id = "${pn.kafka-bridge.onboarding.group-id}",
             topics = "${pn.kafka-bridge.onboarding.topic-name}",
             containerFactory = "onboardingKafkaListenerContainerFactory",
             filter = "onboardingKafkaFilter",

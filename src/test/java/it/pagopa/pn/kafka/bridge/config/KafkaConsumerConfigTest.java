@@ -45,10 +45,8 @@ class KafkaConsumerConfigTest {
 
         PnKafkaBridgeConfig bridgeConfig = new PnKafkaBridgeConfig();
         bridgeConfig.getOnboarding().setTopicName("sc-contracts");
-        bridgeConfig.getOnboarding().setGroupId("group-onboarding");
         bridgeConfig.getOnboarding().setSaslJaasPassword("onboarding-secret");
         bridgeConfig.getDelegations().setTopicName("sc-delegations");
-        bridgeConfig.getDelegations().setGroupId("group-delegations");
         bridgeConfig.getDelegations().setSaslJaasPassword("delegations-secret");
 
         config = new KafkaConsumerConfig(kafkaProperties, bridgeConfig, sslBundles);
@@ -79,27 +77,26 @@ class KafkaConsumerConfigTest {
     }
 
     @Test
-    void onboardingConsumerPropertiesGroupIdAndJaasOfOnboardingTest() {
+    void onboardingConsumerPropertiesJaasOfOnboardingWithoutGroupIdTest() {
         Map<String, Object> props = config.onboardingConsumerProperties();
 
-        assertThat(props.get(ConsumerConfig.GROUP_ID_CONFIG)).isEqualTo("group-onboarding");
+        assertThat(props).doesNotContainKey(ConsumerConfig.GROUP_ID_CONFIG);
         assertThat(props.get("sasl.jaas.config")).isEqualTo(JAAS_PREFIX + "onboarding-secret\";");
     }
 
     @Test
-    void delegationsConsumerPropertiesGroupIdAndJaasOfDelegationsTest() {
+    void delegationsConsumerPropertiesJaasOfDelegationsWithoutGroupIdTest() {
         Map<String, Object> props = config.delegationsConsumerProperties();
 
-        assertThat(props.get(ConsumerConfig.GROUP_ID_CONFIG)).isEqualTo("group-delegations");
+        assertThat(props).doesNotContainKey(ConsumerConfig.GROUP_ID_CONFIG);
         assertThat(props.get("sasl.jaas.config")).isEqualTo(JAAS_PREFIX + "delegations-secret\";");
     }
 
     @Test
-    void consumerPropertiesDifferentGroupIdAndJaasPerFlowTest() {
+    void consumerPropertiesDifferentJaasPerFlowTest() {
         Map<String, Object> onboarding = config.onboardingConsumerProperties();
         Map<String, Object> delegations = config.delegationsConsumerProperties();
 
-        assertThat(onboarding.get(ConsumerConfig.GROUP_ID_CONFIG)).isNotEqualTo(delegations.get(ConsumerConfig.GROUP_ID_CONFIG));
         assertThat(onboarding.get("sasl.jaas.config")).isNotEqualTo(delegations.get("sasl.jaas.config"));
     }
 
@@ -109,7 +106,7 @@ class KafkaConsumerConfigTest {
 
         assertThat(factory).isNotNull();
         Map<String, Object> props = captureConsumerFactoryProperties(factory);
-        assertThat(props.get(ConsumerConfig.GROUP_ID_CONFIG)).isEqualTo("group-onboarding");
+        assertThat(props).doesNotContainKey(ConsumerConfig.GROUP_ID_CONFIG);
         assertThat(props.get("sasl.jaas.config")).isEqualTo(JAAS_PREFIX + "onboarding-secret\";");
         assertCommonProperties(props);
     }
@@ -120,7 +117,7 @@ class KafkaConsumerConfigTest {
 
         assertThat(factory).isNotNull();
         Map<String, Object> props = captureConsumerFactoryProperties(factory);
-        assertThat(props.get(ConsumerConfig.GROUP_ID_CONFIG)).isEqualTo("group-delegations");
+        assertThat(props).doesNotContainKey(ConsumerConfig.GROUP_ID_CONFIG);
         assertThat(props.get("sasl.jaas.config")).isEqualTo(JAAS_PREFIX + "delegations-secret\";");
         assertCommonProperties(props);
     }

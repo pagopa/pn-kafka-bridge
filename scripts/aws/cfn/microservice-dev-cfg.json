@@ -4,7 +4,7 @@
     "KafkaOnboardingGroupId": "pn-kafka-bridge-dev",
     "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
     "KafkaDelegationsTopicName": "sc-delegations",
-    "KafkaDelegationsGroupId": "pn-kafka-bridge-dev",
+    "KafkaDelegationsGroupId": "pn-kafka-bridge-delegations-dev",
     "SelfcarePnProductId": "prod-pn-dev",
     "MaxTasksNumber": "1",
     "PnCronAnalyzer": "-",

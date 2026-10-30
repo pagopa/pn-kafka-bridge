@@ -33,7 +33,6 @@ Parameters:
   KafkaDelegationsGroupId:
     Type: String
     Description: 'Kafka group id for delegations'
-    Default: ''
 
   SelfcarePnProductId:
     Type: String

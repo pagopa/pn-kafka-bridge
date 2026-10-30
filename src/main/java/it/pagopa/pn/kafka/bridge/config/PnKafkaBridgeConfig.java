@@ -28,7 +28,6 @@ public class PnKafkaBridgeConfig {
     @Data
     public static class Onboarding {
         private String topicName;
-        private String groupId;
         private String queueName;
         @ToString.Exclude
         private String saslJaasPassword;
@@ -37,7 +36,6 @@ public class PnKafkaBridgeConfig {
     @Data
     public static class Delegations {
         private String topicName;
-        private String groupId;
         private String queueName;
         @ToString.Exclude
         private String saslJaasPassword;
