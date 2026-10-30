@@ -23,6 +23,31 @@ Then run from the root of the project the command: `./mvnw spring-boot:run`
 |  Indirizzo PEC: read-only ottenuto da SelfCare |      institution.digitalAddress            | digitalAddress |
 |  Data di sottoscrizione dell’accordo: read-only ottenuto da SelfCare|        createdAt          | createdAt      |
 
+### Delegations flow
+
+The bridge also consumes the SelfCare delegations topic (`sc-delegations`, same Event Hub namespace of the contracts topic, with a dedicated credential) and publishes the events of the delegations to the PT on the SQS queue `<ProjectName>-kafka_bridge_delegations`, as [PnPtDelegationEvent](https://github.com/pagopa/pn-model/blob/main/src/main/java/it/pagopa/pn/api/dto/events/PnPtDelegationEvent.java).
+
+* Filter: only the records with `type = PT` are processed; if `PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID` is set, the records of other products are discarded.
+* Validation: the mandatory fields of the SelfCare event (`delegationId`, `type`, `productId`, `status`, `id`, `createdAt`, `from`, `institutionFromName`, `fromTaxCode`, `fromType`, `to`, `institutionToName`, `toTaxCode`, `toType`) are checked; an invalid event is logged as error and not published.
+* Message header: `iun` is the `delegationId`, `eventId` is `<delegationId>_<sourceEventId>`, `eventType` is `PT_DELEGATION_CHANGED`, `publisher` is `KAFKA_BRIDGE`.
+
+Kafka configuration is per flow: bootstrap servers and common consumer properties are shared, while topic, group id, queue and SASL credential are specific to each flow. \
+The group id is used as `id` of the `@KafkaListener`, so it is also the consumer group: the two flows must have different values, otherwise the application does not start.
+
+| Property | Environment variable | Flow |
+|---|---|---|
+| `pn.kafka-bridge.onboarding.topic-name` | `PN_KAFKA_BRIDGE_ONBOARDING_TOPIC_NAME` | onboarding |
+| `pn.kafka-bridge.onboarding.group-id` | `PN_KAFKA_BRIDGE_ONBOARDING_GROUP_ID` | onboarding |
+| `pn.kafka-bridge.onboarding.queue-name` | `PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT` | onboarding |
+| `pn.kafka-bridge.onboarding.sasl-jaas-password` | `KAFKA_ONBOARDING_SASL_JAAS_PASSWORD` | onboarding |
+| `pn.kafka-bridge.delegations.topic-name` | `PN_KAFKA_BRIDGE_DELEGATIONS_TOPIC_NAME` | delegations |
+| `pn.kafka-bridge.delegations.group-id` | `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID` | delegations |
+| `pn.kafka-bridge.delegations.queue-name` | `PN_KAFKA_BRIDGE_DELEGATIONS_QUEUE_NAME` | delegations |
+| `pn.kafka-bridge.delegations.sasl-jaas-password` | `KAFKA_DELEGATIONS_SASL_JAAS_PASSWORD` | delegations |
+
+Before the deploy, SelfCare must enable the PN key and the consumer group on the topic, the key `KafkaDelegationsSaslJaasConfig` must exist in the secret `pn-KafkaBridge-Secrets` and the queue `<ProjectName>-kafka_bridge_delegations` must exist. \
+The parameter `KafkaDelegationsGroupId` (environment variable `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID`) has no default and must be set to the consumer group authorized by SelfCare, otherwise the stack deploy fails.
+
 ### Troubleshooting
 
 #### Scrivere direttamente un evento sulla tabella DynamoDB
