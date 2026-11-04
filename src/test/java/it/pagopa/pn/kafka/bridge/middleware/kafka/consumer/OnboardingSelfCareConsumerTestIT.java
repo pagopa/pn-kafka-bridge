@@ -31,6 +31,9 @@ import java.util.concurrent.ExecutionException;
         "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev",
         "pn.kafka-bridge.payment-events.concurrency=1",
         "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092",
+        "pn.kafka-bridge.onboarding-contracts.properties.auto.offset.reset=earliest",
+        "pn.kafka-bridge.onboarding-contracts.group-id=consumer-test",
+        "pn.kafka-bridge.onboarding-contracts.properties.security.protocol=PLAINTEXT"
 })
 @EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
 class OnboardingSelfCareConsumerTestIT {
