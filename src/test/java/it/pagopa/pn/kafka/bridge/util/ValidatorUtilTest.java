@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,9 +26,6 @@ class ValidatorUtilTest {
 
     @MockitoBean
     private KafkaBridgePaymentsConsumer kafkaBridgePaymentsConsumer;
-
-    @MockitoBean
-    private SqsAsyncClient sqsAsyncClient;
 
     @MockitoBean
     private OnboardingService onboardingService;

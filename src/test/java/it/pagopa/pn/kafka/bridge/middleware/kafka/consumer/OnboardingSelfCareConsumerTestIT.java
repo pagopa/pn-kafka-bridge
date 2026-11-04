@@ -19,7 +19,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 
 import java.util.concurrent.ExecutionException;
 
@@ -47,9 +46,6 @@ class OnboardingSelfCareConsumerTestIT {
 
     @SpyBean
     private OnboardingSelfCareConsumer consumer;
-
-    @MockitoBean
-    private SqsAsyncClient sqsAsyncClient;
 
     @MockitoBean
     private PagoPaPaymentConsumer pagoPaPaymentConsumer;
