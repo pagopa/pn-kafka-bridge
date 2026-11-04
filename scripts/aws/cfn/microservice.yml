@@ -159,6 +159,22 @@ Parameters:
     Type: String
     Description: kafka bridge payments queue age alarm ARN
 
+  KafkaBridgePaymentsQueueDLQName:
+    Type: String
+    Description: kafka bridge payments dlq queue name
+
+  KafkaBridgePaymentsQueueDLQARN:
+    Type: String
+    Description: kafka bridge payments dlq queue ARN
+
+  NoticePaymentInputQueueName:
+    Type: String
+    Description: 'Queue name of Kafka bridge messages for notice payment'
+
+  NoticePaymentInputQueueARN:
+    Type: String
+    Description: 'Queue name of Kafka bridge messages for notice payment'
+
   # Log group parameters
   EcsLogGroup:
     Type: String
@@ -318,6 +334,8 @@ Resources:
         ContainerEnvEntry15: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_TOPIC_NAME=${KafkaPaymentEventsTopicName}'
         ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_GROUP_ID=${KafkaPaymentEventsGroupId}'
         ContainerEnvEntry17: !Sub 'KAFKA_PAYMENT_BOOTSTRAP_SERVERS=${KafkaPaymentEventsBootstrapServers}'
+        ContainerEnvEntry18: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_NOTICEPAYMENTINPUT=${NoticePaymentInputQueueName}'
+        ContainerEnvEntry19: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_ERROREVENTINPUT=${KafkaBridgePaymentsQueueDLQName}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         ContainerSecret2: !Sub 'KAFKA_PAYMENT_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaPaymentEventsSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
@@ -357,6 +375,8 @@ Resources:
             Resource:
               - !Ref KafkaBridgeOnboardingQueueARN
               - !Ref KafkaBridgePaymentsQueueARN
+              - !Ref KafkaBridgePaymentsQueueDLQARN
+              - !Ref NoticePaymentInputQueueARN
 
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
