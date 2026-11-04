@@ -20,7 +20,6 @@ import java.util.Map;
 public class SqsService {
     private final SqsAsyncClient sqsClient;
 
-    //FIXME correggere questo metodo secondo specifica SRS
     public Mono<SendMessageResponse> push(String msg, String pnNationalRegistriesCxId, String queueName, String eventType) {
         return Mono.fromFuture(() -> sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(queueName).build()))
                 .flatMap(getQueueUrlResponse -> {
