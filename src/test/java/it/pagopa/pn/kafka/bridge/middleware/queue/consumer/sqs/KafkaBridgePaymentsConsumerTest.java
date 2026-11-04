@@ -1,6 +1,7 @@
 package it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs;
 
 import it.pagopa.pn.commons.utils.MDCUtils;
+import it.pagopa.pn.kafka.bridge.config.PnKafkaBridgeConfig;
 import it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs.handler.PagoPaPaymentMessageHandler;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import it.pagopa.pn.kafka.bridge.util.MdcKey;
@@ -23,12 +24,15 @@ class KafkaBridgePaymentsConsumerTest {
     @Mock
     private PagoPaPaymentMessageHandler handler;
 
+    @Mock
+    private PnKafkaBridgeConfig pnKafkaBridgeConfig;
+
     private KafkaBridgePaymentsConsumer consumer;
 
     @BeforeEach
     void setUp() {
         MDC.clear();
-        consumer = new KafkaBridgePaymentsConsumer(handler);
+        consumer = new KafkaBridgePaymentsConsumer(handler, pnKafkaBridgeConfig);
     }
 
     @AfterEach

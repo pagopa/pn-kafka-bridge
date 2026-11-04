@@ -5,6 +5,7 @@ import it.pagopa.pn.api.dto.events.EventType;
 import it.pagopa.pn.api.dto.events.PnNoticePaymentEvent;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.utils.MDCUtils;
+import it.pagopa.pn.kafka.bridge.config.PnKafkaBridgeConfig;
 import it.pagopa.pn.kafka.bridge.mapper.PagoPaPaymentMapper;
 import it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs.handler.PagoPaPaymentMessageHandler;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsPaymentsToVerifyProducer;
@@ -39,6 +40,9 @@ class KafkaBridgePaymentsFlowTest {
     @Mock
     private SqsClient sqsClient;
 
+    @Mock
+    private PnKafkaBridgeConfig pnKafkaBridgeConfig;
+
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
     private KafkaBridgePaymentsConsumer consumer;
     private PagoPaPaymentMessage payment;
@@ -47,7 +51,7 @@ class KafkaBridgePaymentsFlowTest {
     void setUp() throws Exception {
         MDC.clear();
         consumer = new KafkaBridgePaymentsConsumer(new PagoPaPaymentMessageHandler(
-                new SqsPaymentsToVerifyProducer(sqsClient, QUEUE_NAME, objectMapper), new PagoPaPaymentMapper()));
+                new SqsPaymentsToVerifyProducer(sqsClient, QUEUE_NAME, objectMapper), new PagoPaPaymentMapper()), pnKafkaBridgeConfig);
         payment = objectMapper.readValue("""
                 {"id":"payment-id","timestamp":"2026-10-20T08:00:00Z",
                  "debtorPosition":{"noticeNumber":"notice-code"},

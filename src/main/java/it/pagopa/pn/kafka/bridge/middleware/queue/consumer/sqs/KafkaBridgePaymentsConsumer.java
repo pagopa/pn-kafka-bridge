@@ -2,6 +2,7 @@ package it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs;
 
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import it.pagopa.pn.commons.utils.MDCUtils;
+import it.pagopa.pn.kafka.bridge.config.PnKafkaBridgeConfig;
 import it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs.handler.PagoPaPaymentMessageHandler;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import it.pagopa.pn.kafka.bridge.util.MdcKey;
@@ -20,8 +21,9 @@ import static it.pagopa.pn.kafka.bridge.util.MdcUtils.setMdc;
 public class KafkaBridgePaymentsConsumer {
 
     private final PagoPaPaymentMessageHandler pagoPaPaymentMessageHandler;
+    private final PnKafkaBridgeConfig pnKafkaBridgeConfig;
 
-    @SqsListener(value = "${pn.kafka-bridge.sqs-topics.kafka-bridge-payments}")
+    @SqsListener(queueNames = "#{@pnKafkaBridgeConfig.sqsTopics.kafkaBridgePayments}")
     public void consume(Message<PagoPaPaymentMessage> message) {
         final String processName = "PAYMENTS MESSAGE";
         setMdc(message);
