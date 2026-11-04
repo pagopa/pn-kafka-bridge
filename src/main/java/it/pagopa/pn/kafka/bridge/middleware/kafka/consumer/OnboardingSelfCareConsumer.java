@@ -21,13 +21,10 @@ public class OnboardingSelfCareConsumer {
     private final ValidatorUtil validatorUtil;
 
     @KafkaListener(
-            id = "${pn.kafka-bridge.onboarding-group-id}",
-            topics = "${pn.kafka-bridge.onboarding-topic-name}",
-            filter = "onboardingKafkaFilter",
-            properties = {
-                    "value.deserializer=it.pagopa.pn.kafka.bridge.middleware.kafka.deserializer.OnboardingSelfCareMessageDeserializer"
-            }
-    )
+            id = "${pn.kafka-bridge.onboarding-contracts.group-id}",
+            topics = "${pn.kafka-bridge.onboarding-contracts.topic-name}",
+            containerFactory = "onboardingContractsKafkaListenerContainerFactory",
+            filter = "onboardingKafkaFilter")
     public void listen(@Header(KafkaHeaders.RECEIVED_TOPIC) String topic, @Payload OnboardingSelfCareMessage inputMessage) {
         log.info("[{}] Received message from topic: {}, with value: {}", inputMessage.getInternalIstitutionID(), topic, inputMessage);
         if(validatorUtil.isValidOnboardingSelfCareMessage(inputMessage)) {

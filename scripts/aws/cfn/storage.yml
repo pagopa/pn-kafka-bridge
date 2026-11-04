@@ -24,6 +24,10 @@ Parameters:
     Type: String
     Description: 'Where to send Logs'
 
+  AlarmSNSTopicName:
+    Type: String
+    Description: 'Topic alarm'
+
   LogRetention:
     Type: Number
     Default: 14
@@ -32,6 +36,20 @@ Conditions:
   Never: !Equals [ 'true', 'false' ]
 
 Resources:
+
+  KafkaBridgePaymentsQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-kafka-bridge-payments'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
   PnKafkaBridgeLogGroup:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
@@ -47,3 +65,16 @@ Outputs:
   # Log group exports
   EcsLogGroup:
     Value: !GetAtt PnKafkaBridgeLogGroup.Outputs.LogGroupName
+
+  KafkaBridgePaymentsQueueName:
+    Value: !GetAtt KafkaBridgePaymentsQueue.Outputs.QueueName
+    Description: pn-kafka-bridge payments queue name
+  KafkaBridgePaymentsQueueARN:
+    Value: !GetAtt KafkaBridgePaymentsQueue.Outputs.QueueARN
+    Description: pn-kafka-bridge payments queue ARN
+  KafkaBridgePaymentsQueueAlarmARN:
+    Value: !GetAtt KafkaBridgePaymentsQueue.Outputs.SqsDLQAlarmArn
+    Description: pn-kafka-bridge payments queue dlq alarm queue
+  KafkaBridgePaymentsQueueAgeAlarmARN:
+    Value: !GetAtt KafkaBridgePaymentsQueue.Outputs.SqsAgeAlarmArn
+    Description: pn-kafka-bridge payments queue age alarm ARN
