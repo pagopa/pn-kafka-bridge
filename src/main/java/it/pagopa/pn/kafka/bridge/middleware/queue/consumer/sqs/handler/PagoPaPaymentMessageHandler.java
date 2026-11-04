@@ -12,13 +12,20 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class PagoPaPaymentMessageHandler {
 
     public static final String ERROR_CODE_PAYMENT_EVENTFAILED = "PN_PAYMENT_EVENTFAILED";
     private final MomProducer<PnNoticePaymentEvent> paymentsToVerifyProducer;
     private final PagoPaPaymentMapper mapper;
+
+    public PagoPaPaymentMessageHandler(
+            @org.springframework.beans.factory.annotation.Qualifier("sqsPaymentsToVerifyProducer")
+            MomProducer<PnNoticePaymentEvent> paymentsToVerifyProducer,
+            PagoPaPaymentMapper mapper) {
+        this.paymentsToVerifyProducer = paymentsToVerifyProducer;
+        this.mapper = mapper;
+    }
 
     public void handleEvent(PagoPaPaymentMessage evt ) {
         try {
