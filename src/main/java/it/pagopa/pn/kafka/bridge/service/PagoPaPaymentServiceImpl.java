@@ -20,7 +20,6 @@ import java.util.stream.IntStream;
 
 @Service
 @CustomLog
-@RequiredArgsConstructor
 public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
 
     private static final int BATCH_SIZE = 10;
@@ -31,6 +30,18 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
     private final MomProducer<PnNoticePaymentEvent> noticePaymentEvent;
     private final ObjectMapper objectMapper;
     private final PagoPaPaymentMapper mapper;
+
+    public PagoPaPaymentServiceImpl(
+            MomProducer<PnErrorEvent> errorEvent,
+            @org.springframework.beans.factory.annotation.Qualifier("sqsNoticePaymentProducer")
+            MomProducer<PnNoticePaymentEvent> noticePaymentEvent,
+            ObjectMapper objectMapper,
+            PagoPaPaymentMapper mapper) {
+        this.errorEvent = errorEvent;
+        this.noticePaymentEvent = noticePaymentEvent;
+        this.objectMapper = objectMapper;
+        this.mapper = mapper;
+    }
 
     @Override
     public void sendMessage(List<String> inputMessages) {
