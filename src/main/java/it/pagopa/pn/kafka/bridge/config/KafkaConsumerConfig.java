@@ -1,6 +1,7 @@
 package it.pagopa.pn.kafka.bridge.config;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.ssl.SslBundles;
@@ -8,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
 
@@ -31,7 +33,11 @@ public class KafkaConsumerConfig {
 
     Map<String, Object> delegationsConsumerProperties() {
         PnKafkaBridgeConfig.Delegations delegations = pnKafkaBridgeConfig.getDelegations();
-        return consumerProperties(delegations.getSaslJaasPassword());
+        Map<String, Object> properties = consumerProperties(delegations.getSaslJaasPassword());
+        if (!CollectionUtils.isEmpty(delegations.getBootstrapServers())) {
+            properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, delegations.getBootstrapServers());
+        }
+        return properties;
     }
 
     @Bean

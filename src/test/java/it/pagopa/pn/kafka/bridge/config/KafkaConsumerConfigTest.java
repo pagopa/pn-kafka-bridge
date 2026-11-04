@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class KafkaConsumerConfigTest {
 
     private static final String BOOTSTRAP = "broker.example.com:9093";
+    private static final String DELEGATIONS_BOOTSTRAP = "delegations-broker.example.com:9093";
     private static final String JAAS_PREFIX = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"";
 
     @Mock
@@ -30,6 +31,8 @@ class KafkaConsumerConfigTest {
 
     @Mock
     private ConcurrentKafkaListenerContainerFactoryConfigurer configurer;
+
+    private PnKafkaBridgeConfig bridgeConfig;
 
     private KafkaConsumerConfig config;
 
@@ -43,7 +46,7 @@ class KafkaConsumerConfigTest {
         kafkaProperties.getConsumer().getProperties().put("sasl.mechanism", "PLAIN");
         kafkaProperties.getConsumer().getProperties().put("security.protocol", "SASL_SSL");
 
-        PnKafkaBridgeConfig bridgeConfig = new PnKafkaBridgeConfig();
+        bridgeConfig = new PnKafkaBridgeConfig();
         bridgeConfig.getOnboarding().setTopicName("sc-contracts");
         bridgeConfig.getOnboarding().setSaslJaasPassword("onboarding-secret");
         bridgeConfig.getDelegations().setTopicName("sc-delegations");
@@ -74,6 +77,36 @@ class KafkaConsumerConfigTest {
         assertThat(onboarding.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG))
                 .isEqualTo(delegations.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG));
         assertThat(onboarding.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG)).isEqualTo(List.of(BOOTSTRAP));
+    }
+
+    @Test
+    void delegationsConsumerPropertiesOwnBootstrapServersTest() {
+        bridgeConfig.getDelegations().setBootstrapServers(List.of(DELEGATIONS_BOOTSTRAP));
+
+        Map<String, Object> onboarding = config.onboardingConsumerProperties();
+        Map<String, Object> delegations = config.delegationsConsumerProperties();
+
+        assertThat(delegations.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG)).isEqualTo(List.of(DELEGATIONS_BOOTSTRAP));
+        assertThat(onboarding.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG)).isEqualTo(List.of(BOOTSTRAP));
+    }
+
+    @Test
+    void delegationsConsumerPropertiesEmptyBootstrapServersFallbackToSharedTest() {
+        bridgeConfig.getDelegations().setBootstrapServers(List.of());
+
+        Map<String, Object> delegations = config.delegationsConsumerProperties();
+
+        assertThat(delegations.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG)).isEqualTo(List.of(BOOTSTRAP));
+    }
+
+    @Test
+    void delegationsKafkaListenerContainerFactoryOwnBootstrapServersTest() {
+        bridgeConfig.getDelegations().setBootstrapServers(List.of(DELEGATIONS_BOOTSTRAP));
+
+        ConcurrentKafkaListenerContainerFactory<Object, Object> factory = config.delegationsKafkaListenerContainerFactory(configurer);
+
+        Map<String, Object> props = captureConsumerFactoryProperties(factory);
+        assertThat(props.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG)).isEqualTo(List.of(DELEGATIONS_BOOTSTRAP));
     }
 
     @Test

@@ -34,6 +34,11 @@ Parameters:
     Type: String
     Description: 'Kafka group id for delegations'
 
+  KafkaDelegationsBootstrapServers:
+    Type: String
+    Description: 'Kafka bootstrap servers for delegations, empty to use KafkaOnboardingBootstrapServers'
+    Default: ''
+
   SelfcarePnProductId:
     Type: String
     Description: 'Selfcare product id'
@@ -274,6 +279,7 @@ Resources:
         ContainerEnvEntry11: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_TOPIC_NAME=${KafkaDelegationsTopicName}'
         ContainerEnvEntry12: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID=${KafkaDelegationsGroupId}'
         ContainerEnvEntry13: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_QUEUE_NAME=${ProjectName}-kafka_bridge_delegations'
+        ContainerEnvEntry14: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_BOOTSTRAP_SERVERS=${KafkaDelegationsBootstrapServers}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         ContainerSecret2: !Sub 'KAFKA_DELEGATIONS_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaDelegationsSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets

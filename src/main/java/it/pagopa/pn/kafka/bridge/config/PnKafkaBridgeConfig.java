@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.util.List;
+
 
 @Configuration
 @EnableScheduling
@@ -37,6 +39,7 @@ public class PnKafkaBridgeConfig {
     public static class Delegations {
         private String topicName;
         private String queueName;
+        private List<String> bootstrapServers;
         @ToString.Exclude
         private String saslJaasPassword;
     }

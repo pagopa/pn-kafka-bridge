@@ -19,8 +19,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,6 +57,9 @@ class DelegationsSelfCareConsumerTestIT {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
 
     @MockitoBean
     private SqsDelegationsProducer sqsDelegationsProducer;
@@ -126,6 +132,14 @@ class DelegationsSelfCareConsumerTestIT {
         Mockito.verify(delegationService, Mockito.after(2000).never()).sendMessage(expectedValue);
         Mockito.verify(sqsDelegationsProducer, Mockito.never()).push(Mockito.any(PnPtDelegationEvent.class));
         ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*toTaxCode.*");
+    }
+
+    @Test
+    void listenerContainersRetryOnAuthenticationExceptionTest() {
+        assertThat(kafkaListenerEndpointRegistry.getListenerContainers())
+                .hasSize(2)
+                .extracting(MessageListenerContainer::getContainerProperties)
+                .allSatisfy(properties -> assertThat(properties.getAuthExceptionRetryInterval()).isEqualTo(Duration.ofSeconds(60)));
     }
 
     private String delegationEvent(String type, String productId) {
