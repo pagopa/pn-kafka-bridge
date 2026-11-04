@@ -30,7 +30,7 @@ final class PaymentFlowFixtures {
                   "creditor": {"idPA": "12345678901", "companyName": "Test creditor"},
                   "paymentInfo": {
                     "dueDate": "2026-10-21T00:00:00Z", "totalNotice": "2",
-                    "paymentChannel": "PSP", "amount": 1000, "fee": 50
+                    "paymentChannel": "PSP", "amount": 1000, "fee": 50, "paymentDateTime": "2026-10-20T08:00:00Z"
                   }
                 }
                 """.formatted(index, index, index, index);

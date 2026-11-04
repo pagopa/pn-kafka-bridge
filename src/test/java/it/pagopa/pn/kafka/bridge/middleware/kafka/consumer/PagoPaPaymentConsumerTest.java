@@ -3,9 +3,13 @@ package it.pagopa.pn.kafka.bridge.middleware.kafka.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import it.pagopa.pn.kafka.bridge.service.PagoPaPaymentService;
+import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
+import jakarta.validation.Validation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -18,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +31,8 @@ class PagoPaPaymentConsumerTest {
 
     @Mock
     private PagoPaPaymentService service;
+    @Mock
+    private ValidatorUtil validatorUtil;
     @Mock
     private ConsumerRecord<String, String> record;
     @Captor
@@ -47,8 +54,9 @@ class PagoPaPaymentConsumerTest {
                  "paymentInfo":{"totalNotice":"2","fee":50}}
                 """);
         Instant before = Instant.now();
+        when(validatorUtil.isValidPaymentMessage(any(PagoPaPaymentMessage.class))).thenReturn(true);
 
-        new PagoPaPaymentConsumer(service, objectMapper).listen("payments", List.of(record));
+        new PagoPaPaymentConsumer(service, validatorUtil, objectMapper).listen(List.of(record));
 
         Instant after = Instant.now();
         verify(service).sendMessage(payments.capture(), ingestionTimestamp.capture());
@@ -69,8 +77,32 @@ class PagoPaPaymentConsumerTest {
         when(record.timestamp()).thenReturn(-1L);
 
         assertThrows(IllegalArgumentException.class,
-                () -> new PagoPaPaymentConsumer(service, objectMapper).listen("payments", List.of(record)));
+                () -> new PagoPaPaymentConsumer(service, validatorUtil, objectMapper).listen(List.of(record)));
 
         verifyNoInteractions(service);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{}",
+            "{\"id\":\"123456789012345678901\"}",
+            "{\"id\":\"invalid\",\"debtorPosition\":{}}",
+            "{invalid-json",
+            "null"
+    })
+    void routesInvalidRecordToMalformedMessagesWithoutDiscardingValidRecords(String invalidBody) {
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            var consumer = new PagoPaPaymentConsumer(service,
+                    new ValidatorUtil(factory.getValidator()), objectMapper);
+            consumer.listen(List.of(
+                    PaymentFlowFixtures.record(0, "{\"id\":\"valid-before\"}"),
+                    PaymentFlowFixtures.record(1, invalidBody),
+                    PaymentFlowFixtures.record(2, "{\"id\":\"valid-after\"}")));
+
+            verify(service).sendMessage(List.of(invalidBody));
+            verify(service).sendMessage(payments.capture(), ingestionTimestamp.capture());
+            assertEquals(List.of("valid-before", "valid-after"),
+                    payments.getValue().stream().map(PagoPaPaymentMessage::getId).toList());
+        }
     }
 }
