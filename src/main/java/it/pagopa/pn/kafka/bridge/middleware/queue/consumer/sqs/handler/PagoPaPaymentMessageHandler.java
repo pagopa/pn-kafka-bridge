@@ -29,7 +29,6 @@ public class PagoPaPaymentMessageHandler {
 
     public void handleEvent(PagoPaPaymentMessage evt ) {
         try {
-            //TODO è corretto mettere Instant.now?
             PnNoticePaymentEvent event = mapper.toPnNoticePaymentEvent(evt, Instant.now());
             paymentsToVerifyProducer.push(event);
         } catch (Exception e) {
