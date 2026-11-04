@@ -2,6 +2,7 @@ package it.pagopa.pn.kafka.bridge.util;
 
 import it.pagopa.pn.kafka.bridge.middleware.kafka.consumer.OnboardingSelfCareConsumer;
 import it.pagopa.pn.kafka.bridge.middleware.kafka.consumer.PagoPaPaymentConsumer;
+import it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs.KafkaBridgePaymentsConsumer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsOnboardingProducer;
 import it.pagopa.pn.kafka.bridge.model.OnboardingSelfCareMessage;
 import it.pagopa.pn.kafka.bridge.service.OnboardingService;
@@ -23,6 +24,9 @@ class ValidatorUtilTest {
 
     @MockitoBean
     private PagoPaPaymentConsumer pagoPaPaymentConsumer;
+
+    @MockitoBean
+    private KafkaBridgePaymentsConsumer kafkaBridgePaymentsConsumer;
 
     @MockitoBean
     private SqsAsyncClient sqsAsyncClient;
