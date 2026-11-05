@@ -106,6 +106,55 @@ class ValidatorUtilTest {
         ExpectedLoggingAssertions.assertThat(logging).hasNoErrorMessage();
     }
 
+    @Test
+    void isValidDelegationSelfCareMessageOnlyFieldsRequiredByFeatureReturnsTrueTest() {
+        DelegationSelfCareMessage message = new DelegationSelfCareMessage();
+        message.setDelegationId("6a1b6a4e-2f1d-4c0e-8d55-3b7f0c1e9a22");
+        message.setFrom("b1f3c2d4-0a1b-4c2d-8e3f-4a5b6c7d8e9f");
+        message.setTo("c2a4d3e5-1b2c-4d3e-9f40-5b6c7d8e9f01");
+        message.setStatus("ACTIVE");
+        message.setInstitutionFromName("Comune di Milano");
+        message.setFromTaxCode("00488410010");
+
+        boolean actual = validatorUtil.isValidDelegationSelfCareMessage(message);
+
+        assertThat(actual).isTrue();
+        ExpectedLoggingAssertions.assertThat(logging).hasNoErrorMessage();
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("delegationNotValidatedFieldRemovers")
+    void isValidDelegationSelfCareMessageMissingNotValidatedFieldReturnsTrueTest(String field, Consumer<DelegationSelfCareMessage> remover) {
+        DelegationSelfCareMessage message = completeDelegation();
+        remover.accept(message);
+
+        boolean actual = validatorUtil.isValidDelegationSelfCareMessage(message);
+
+        assertThat(actual).isTrue();
+        ExpectedLoggingAssertions.assertThat(logging).hasNoErrorMessage();
+    }
+
+    @Test
+    void isValidDelegationSelfCareMessageStatusDeletedReturnsTrueTest() {
+        DelegationSelfCareMessage message = completeDelegation();
+        message.setStatus("DELETED");
+
+        boolean actual = validatorUtil.isValidDelegationSelfCareMessage(message);
+
+        assertThat(actual).isTrue();
+    }
+
+    @Test
+    void isValidDelegationSelfCareMessageStatusNotAllowedReturnsFalseAndLogsErrorTest() {
+        DelegationSelfCareMessage message = completeDelegation();
+        message.setStatus("SUSPENDED");
+
+        boolean actual = validatorUtil.isValidDelegationSelfCareMessage(message);
+
+        assertThat(actual).isFalse();
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*status.*");
+    }
+
     @ParameterizedTest(name = "{0}")
     @MethodSource("delegationMandatoryFieldRemovers")
     void isValidDelegationSelfCareMessageMissingMandatoryFieldReturnsFalseAndLogsErrorTest(String field, Consumer<DelegationSelfCareMessage> remover) {
@@ -131,19 +180,24 @@ class ValidatorUtilTest {
 
     private static Stream<Arguments> delegationMandatoryFieldRemovers() {
         return Stream.of(
-                Arguments.of("id", (Consumer<DelegationSelfCareMessage>) m -> m.setId(null)),
                 Arguments.of("delegationId", (Consumer<DelegationSelfCareMessage>) m -> m.setDelegationId(null)),
                 Arguments.of("from", (Consumer<DelegationSelfCareMessage>) m -> m.setFrom(null)),
                 Arguments.of("institutionFromName", (Consumer<DelegationSelfCareMessage>) m -> m.setInstitutionFromName(null)),
-                Arguments.of("institutionToName", (Consumer<DelegationSelfCareMessage>) m -> m.setInstitutionToName(null)),
                 Arguments.of("to", (Consumer<DelegationSelfCareMessage>) m -> m.setTo(null)),
-                Arguments.of("toTaxCode", (Consumer<DelegationSelfCareMessage>) m -> m.setToTaxCode(null)),
                 Arguments.of("fromTaxCode", (Consumer<DelegationSelfCareMessage>) m -> m.setFromTaxCode(null)),
+                Arguments.of("status", (Consumer<DelegationSelfCareMessage>) m -> m.setStatus(null))
+        );
+    }
+
+    private static Stream<Arguments> delegationNotValidatedFieldRemovers() {
+        return Stream.of(
+                Arguments.of("id", (Consumer<DelegationSelfCareMessage>) m -> m.setId(null)),
+                Arguments.of("institutionToName", (Consumer<DelegationSelfCareMessage>) m -> m.setInstitutionToName(null)),
+                Arguments.of("toTaxCode", (Consumer<DelegationSelfCareMessage>) m -> m.setToTaxCode(null)),
                 Arguments.of("toType", (Consumer<DelegationSelfCareMessage>) m -> m.setToType(null)),
                 Arguments.of("fromType", (Consumer<DelegationSelfCareMessage>) m -> m.setFromType(null)),
                 Arguments.of("productId", (Consumer<DelegationSelfCareMessage>) m -> m.setProductId(null)),
                 Arguments.of("type", (Consumer<DelegationSelfCareMessage>) m -> m.setType(null)),
-                Arguments.of("status", (Consumer<DelegationSelfCareMessage>) m -> m.setStatus(null)),
                 Arguments.of("createdAt", (Consumer<DelegationSelfCareMessage>) m -> m.setCreatedAt(null))
         );
     }

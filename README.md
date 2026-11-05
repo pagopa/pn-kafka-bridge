@@ -28,7 +28,7 @@ Then run from the root of the project the command: `./mvnw spring-boot:run`
 The bridge also consumes the SelfCare delegations topic (`sc-delegations`, with a dedicated credential and optionally a dedicated Event Hub namespace) and publishes the events of the delegations to the PT on the SQS queue `<ProjectName>-kafka_bridge_delegations`, as [PnPtDelegationEvent](https://github.com/pagopa/pn-model/blob/main/src/main/java/it/pagopa/pn/api/dto/events/PnPtDelegationEvent.java).
 
 * Filter: only the records with `type = PT` are processed; if `PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID` is set, the records of other products are discarded.
-* Validation: the mandatory fields of the SelfCare event (`delegationId`, `type`, `productId`, `status`, `id`, `createdAt`, `from`, `institutionFromName`, `fromTaxCode`, `fromType`, `to`, `institutionToName`, `toTaxCode`, `toType`) are checked; an invalid event is logged as error and not published.
+* Validation: only the fields required by the feature are checked: `from`, `to`, `delegationId`, `status`, `institutionFromName` and `fromTaxCode` must be present, `status` must be `ACTIVE` or `DELETED`, `createdAt`, `updatedAt` and `closedAt`, when present, must be valid dates with offset. The other fields are not validated. An invalid event is logged as error and not published.
 * Message header: `iun` is the `delegationId`, `eventId` is `<delegationId>_<sourceEventId>`, `eventType` is `PT_DELEGATION_CHANGED`, `publisher` is `KAFKA_BRIDGE`.
 
 Kafka configuration is per flow: common consumer properties are shared, while topic, group id, queue and SASL credential are specific to each flow. \

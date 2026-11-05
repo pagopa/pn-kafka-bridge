@@ -110,6 +110,28 @@ class DelegationSelfCareMessageDeserializerTest {
     }
 
     @Test
+    void deserializeTimestampWithOffsetConvertedToInstantTest() {
+        byte[] bytes = completeEvent("prod-pn-dev", "true").replace("2024-08-10T09:15:00.123Z", "2024-08-10T11:15:00.123+02:00").getBytes();
+
+        DelegationSelfCareMessage actual = deserializer.deserialize("topic", bytes);
+
+        assertThat(actual).isNotNull();
+        assertThat(actual.getUpdatedAt()).isEqualTo(Instant.parse("2024-08-10T09:15:00.123Z"));
+        ExpectedLoggingAssertions.assertThat(logging).hasNoErrorMessage();
+    }
+
+    @Test
+    void deserializeTimestampWithoutOffsetForPnProductReturnsNullWithErrorLogTest() {
+        byte[] bytes = completeEvent("prod-pn-dev", "true").replace("2024-09-11T07:05:30Z", "2024-09-11T07:05:30").getBytes();
+
+        DelegationSelfCareMessage actual = deserializer.deserialize("topic", bytes);
+
+        assertThat(actual).isNull();
+        ExpectedLoggingAssertions.assertThat(logging)
+                .hasErrorMessage("Error when deserializing byte[] to DelegationSelfCareMessage with input: " + new String(bytes));
+    }
+
+    @Test
     void deserializeInvalidTimestampForOtherProductReturnsNullWithoutErrorLogTest() {
         byte[] bytes = completeEvent("prod-io", "true").replace("2024-08-10T09:15:00.123Z", "not-a-date").getBytes();
 

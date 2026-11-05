@@ -123,7 +123,7 @@ class DelegationsSelfCareConsumerTestIT {
     @Test
     void listenDelegationWithMissingMandatoryFieldNotPublishedTest() throws ExecutionException, InterruptedException, JsonProcessingException {
         String inputRequest = delegationEvent("PT", "prod-pn-dev")
-                .replace("\"toTaxCode\":\"01234567890\",", "");
+                .replace("\"fromTaxCode\":\"00488410010\",", "");
 
         kafkaTemplate.send("sc-delegations", inputRequest).get();
 
@@ -131,7 +131,19 @@ class DelegationsSelfCareConsumerTestIT {
         Mockito.verify(consumer, Mockito.timeout(10000).times(1)).listen("sc-delegations", expectedValue);
         Mockito.verify(delegationService, Mockito.after(2000).never()).sendMessage(expectedValue);
         Mockito.verify(sqsDelegationsProducer, Mockito.never()).push(Mockito.any(PnPtDelegationEvent.class));
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*toTaxCode.*");
+        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*fromTaxCode.*");
+    }
+
+    @Test
+    void listenDelegationWithMissingNotValidatedFieldPublishedTest() throws ExecutionException, InterruptedException, JsonProcessingException {
+        String inputRequest = delegationEvent("PT", "prod-pn-dev")
+                .replace("\"toTaxCode\":\"01234567890\",", "");
+
+        kafkaTemplate.send("sc-delegations", inputRequest).get();
+
+        DelegationSelfCareMessage expectedValue = objectMapper.readValue(inputRequest, DelegationSelfCareMessage.class);
+        Mockito.verify(delegationService, Mockito.timeout(10000).times(1)).sendMessage(expectedValue);
+        Mockito.verify(sqsDelegationsProducer, Mockito.timeout(10000).times(1)).push(Mockito.any(PnPtDelegationEvent.class));
     }
 
     @Test

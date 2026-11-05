@@ -11,6 +11,7 @@ import it.pagopa.pn.kafka.bridge.model.DelegationSelfCareMessage;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 
@@ -33,7 +34,9 @@ public class DelegationServiceImpl implements DelegationService {
     }
 
     private PnPtDelegationEvent buildEvent(PnPtDelegationPayload payload) {
-        String eventId = payload.getDelegationId() + "_" + payload.getSourceEventId();
+        String eventId = StringUtils.hasText(payload.getSourceEventId())
+                ? payload.getDelegationId() + "_" + payload.getSourceEventId()
+                : payload.getDelegationId();
         return PnPtDelegationEvent.builder()
                 .header(StandardEventHeader.builder()
                         .iun(payload.getDelegationId())

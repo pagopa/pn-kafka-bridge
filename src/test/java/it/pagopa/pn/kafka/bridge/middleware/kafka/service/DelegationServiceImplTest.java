@@ -52,6 +52,18 @@ class DelegationServiceImplTest {
     }
 
     @Test
+    void sendMessageWithoutSourceEventIdEventIdIsDelegationIdTest() {
+        DelegationSelfCareMessage message = message();
+        message.setId(null);
+
+        service.sendMessage(message);
+
+        ArgumentCaptor<PnPtDelegationEvent> captor = ArgumentCaptor.forClass(PnPtDelegationEvent.class);
+        Mockito.verify(delegationProducer).push(captor.capture());
+        assertThat(captor.getValue().getHeader().getEventId()).isEqualTo(DELEGATION_ID);
+    }
+
+    @Test
     void sendMessageValidMessageEventIdCompatibleWithSqsBatchEntryIdTest() {
         service.sendMessage(message());
 
