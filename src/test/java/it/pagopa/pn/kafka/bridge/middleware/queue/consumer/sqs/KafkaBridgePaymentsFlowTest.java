@@ -10,6 +10,8 @@ import it.pagopa.pn.kafka.bridge.mapper.PagoPaPaymentMapper;
 import it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs.handler.PagoPaPaymentMessageHandler;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsPaymentsToVerifyProducer;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
+import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,7 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import software.amazon.awssdk.services.sqs.model.SqsException;
 
 import java.time.Instant;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +46,9 @@ class KafkaBridgePaymentsFlowTest {
     @Mock
     private PnKafkaBridgeConfig pnKafkaBridgeConfig;
 
+    @Mock
+    private Validator validator;
+
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
     private KafkaBridgePaymentsConsumer consumer;
     private PagoPaPaymentMessage payment;
@@ -50,8 +56,14 @@ class KafkaBridgePaymentsFlowTest {
     @BeforeEach
     void setUp() throws Exception {
         MDC.clear();
-        consumer = new KafkaBridgePaymentsConsumer(new PagoPaPaymentMessageHandler(
-                new SqsPaymentsToVerifyProducer(sqsClient, QUEUE_NAME, objectMapper), new PagoPaPaymentMapper()), pnKafkaBridgeConfig);
+        consumer = new KafkaBridgePaymentsConsumer(
+                new PagoPaPaymentMessageHandler(
+                    new SqsPaymentsToVerifyProducer(sqsClient, QUEUE_NAME, objectMapper),
+                    new PagoPaPaymentMapper(),
+                    new ValidatorUtil(validator)
+                ),
+                pnKafkaBridgeConfig
+        );
         payment = objectMapper.readValue("""
                 {"id":"payment-id","timestamp":"2026-10-20T08:00:00Z",
                  "debtorPosition":{"noticeNumber":"notice-code"},
@@ -70,6 +82,7 @@ class KafkaBridgePaymentsFlowTest {
     @Test
     void forwardsConsumedPaymentThroughHandlerToPaymentsToVerifyQueue() throws Exception {
         Instant before = Instant.now();
+        when(validator.validate(payment)).thenReturn(Collections.emptySet());
 
         consumer.consume(MessageBuilder.withPayload(payment).build());
 

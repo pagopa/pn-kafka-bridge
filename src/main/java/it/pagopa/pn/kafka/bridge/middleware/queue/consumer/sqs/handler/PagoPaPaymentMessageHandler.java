@@ -5,6 +5,7 @@ import it.pagopa.pn.api.dto.events.PnNoticePaymentEvent;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.kafka.bridge.mapper.PagoPaPaymentMapper;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
+import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,22 +14,20 @@ import java.time.Instant;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class PagoPaPaymentMessageHandler {
 
     public static final String ERROR_CODE_PAYMENT_EVENTFAILED = "PN_PAYMENT_EVENTFAILED";
     private final MomProducer<PnNoticePaymentEvent> paymentsToVerifyProducer;
     private final PagoPaPaymentMapper mapper;
-
-    public PagoPaPaymentMessageHandler(
-            @org.springframework.beans.factory.annotation.Qualifier("sqsPaymentsToVerifyProducer")
-            MomProducer<PnNoticePaymentEvent> paymentsToVerifyProducer,
-            PagoPaPaymentMapper mapper) {
-        this.paymentsToVerifyProducer = paymentsToVerifyProducer;
-        this.mapper = mapper;
-    }
+    private final ValidatorUtil validatorUtil;
 
     public void handleEvent(PagoPaPaymentMessage evt ) {
         try {
+            if(!validatorUtil.isValidPaymentMessage(evt)) {
+                log.error("Invalid payment message given {}", evt);
+                throw new PnInternalException("Invalid payment message given", ERROR_CODE_PAYMENT_EVENTFAILED);
+            }
             PnNoticePaymentEvent event = mapper.toPnNoticePaymentEvent(evt, Instant.now());
             paymentsToVerifyProducer.push(event);
         } catch (Exception e) {

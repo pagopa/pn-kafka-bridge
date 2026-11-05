@@ -5,6 +5,7 @@ import it.pagopa.pn.api.dto.events.PnNoticePaymentEvent;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.kafka.bridge.mapper.PagoPaPaymentMapper;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
+import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,19 +27,22 @@ class PagoPaPaymentMessageHandlerTest {
     private MomProducer<PnNoticePaymentEvent> producer;
     @Mock
     private PagoPaPaymentMapper mapper;
+    @Mock
+    private ValidatorUtil validatorUtil;
 
     private PagoPaPaymentMessageHandler handler;
     private final PagoPaPaymentMessage payment = new PagoPaPaymentMessage();
 
     @BeforeEach
     void setUp() {
-        handler = new PagoPaPaymentMessageHandler(producer, mapper);
+        handler = new PagoPaPaymentMessageHandler(producer, mapper, validatorUtil);
     }
 
     @Test
     void mapsWithCurrentIngestionTimestampAndPushesTheMappedEvent() {
         PnNoticePaymentEvent event = PnNoticePaymentEvent.builder().build();
         when(mapper.toPnNoticePaymentEvent(same(payment), any(Instant.class))).thenReturn(event);
+        when(validatorUtil.isValidPaymentMessage(payment)).thenReturn(true);
         Instant before = Instant.now();
 
         handler.handleEvent(payment);
@@ -53,8 +58,18 @@ class PagoPaPaymentMessageHandlerTest {
     }
 
     @Test
+    void throwsInternalExceptionWhenEventIsInvalid() {
+        when(validatorUtil.isValidPaymentMessage(payment)).thenReturn(false);
+
+        assertThrows(PnInternalException.class, () -> handler.handleEvent(payment));
+
+        verifyNoInteractions(mapper, producer);
+    }
+
+    @Test
     void wrapsMappingFailureWithoutCallingProducer() {
         RuntimeException failure = new IllegalArgumentException("Invalid payment");
+        when(validatorUtil.isValidPaymentMessage(payment)).thenReturn(true);
         when(mapper.toPnNoticePaymentEvent(same(payment), any(Instant.class))).thenThrow(failure);
 
         PnInternalException thrown = assertThrows(PnInternalException.class, () -> handler.handleEvent(payment));
@@ -67,6 +82,7 @@ class PagoPaPaymentMessageHandlerTest {
     void wrapsProducerFailurePreservingItsCause() {
         PnNoticePaymentEvent event = PnNoticePaymentEvent.builder().build();
         RuntimeException failure = new IllegalStateException("SQS unavailable");
+        when(validatorUtil.isValidPaymentMessage(payment)).thenReturn(true);
         when(mapper.toPnNoticePaymentEvent(same(payment), any(Instant.class))).thenReturn(event);
         doThrow(failure).when(producer).push(event);
 

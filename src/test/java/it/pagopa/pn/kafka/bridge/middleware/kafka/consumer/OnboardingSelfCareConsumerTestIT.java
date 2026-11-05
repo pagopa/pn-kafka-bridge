@@ -14,29 +14,21 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.util.concurrent.ExecutionException;
 
 
 @SpringBootTest(properties = {
         "pn.kafka-bridge.onboarding-contracts.bootstrap-servers=PLAINTEXT://localhost:9092",
-        "spring.kafka.consumer.auto-offset-reset=earliest",
-        "pn.kafka-bridge.onboarding-group-id=consumer-test",
-        "spring.kafka.consumer.properties.security.protocol=PLAINTEXT",
-        "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev",
-        "pn.kafka-bridge.payment-events.concurrency=1",
-        "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092",
+        "pn.kafka-bridge.onboarding-contracts.topic-name=sc-contracts",
         "pn.kafka-bridge.onboarding-contracts.properties.auto.offset.reset=earliest",
         "pn.kafka-bridge.onboarding-contracts.group-id=consumer-test",
         "pn.kafka-bridge.onboarding-contracts.properties.security.protocol=PLAINTEXT",
         "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev",
-        "pn.kafka-bridge.payment-events.concurrency=1",
-        "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092"
 })
 @EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
 class OnboardingSelfCareConsumerTestIT {
@@ -44,7 +36,7 @@ class OnboardingSelfCareConsumerTestIT {
     @RegisterExtension
     private final ExpectedLogging logging = ExpectedLogging.forSource(ValidatorUtil.class);
 
-    @SpyBean
+    @MockitoSpyBean
     private OnboardingSelfCareConsumer consumer;
 
     @MockitoBean
@@ -53,7 +45,7 @@ class OnboardingSelfCareConsumerTestIT {
     @MockitoBean
     private KafkaBridgePaymentsConsumer kafkaBridgePaymentsConsumer;
 
-    @SpyBean
+    @MockitoSpyBean
     private OnboardingService onboardingService;
 
     @Autowired
@@ -62,7 +54,7 @@ class OnboardingSelfCareConsumerTestIT {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private SqsOnboardingProducer sqsOnboardingProducer;
 
 
