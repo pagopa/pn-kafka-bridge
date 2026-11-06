@@ -246,7 +246,7 @@ class PagoPaPaymentFlowTest {
     }
 
     @Test
-    void propagatesErrorQueueFailureAfterSendingValidPayments() {
+    void errorQueueFailurePreventsSendingValidPayments() {
         when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
                 .thenAnswer(invocation -> {
                     GetQueueUrlRequest request = invocation.getArgument(0);
@@ -266,10 +266,8 @@ class PagoPaPaymentFlowTest {
         assertSame(failure, assertThrows(SqsException.class,
                 () -> consumer.listen(List.of(record(0, "{invalid"), record(1, validPayment(1))))));
 
-        List<SendMessageBatchRequest> requests = requests(2);
-        assertEquals(QUEUE_URL_PREFIX + PAYMENT_QUEUE, requests.get(0).queueUrl());
-        assertEquals(QUEUE_URL_PREFIX + ERROR_QUEUE, requests.get(1).queueUrl());
-        verify(sqsClient, times(2)).getQueueUrl(any(GetQueueUrlRequest.class));
+        assertEquals(QUEUE_URL_PREFIX + ERROR_QUEUE, requests(1).get(0).queueUrl());
+        verify(sqsClient).getQueueUrl(any(GetQueueUrlRequest.class));
     }
 
     private void successfulSqs() {
