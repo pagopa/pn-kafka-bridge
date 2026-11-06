@@ -35,6 +35,7 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
     @Override
     public void sendMessage(List<String> inputMessages) {
         List<PnErrorEvent> events = mapper.buildMalformedEvents(inputMessages);
+        log.info("Built malformed events: {}", events);
         buildMalformedBatches(events).parallelStream()
                 .forEach(batch -> {
                     log.debug("Sending messages to SQS: {}", batch);
@@ -44,6 +45,7 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
     }
 
     List<List<PnErrorEvent>> buildMalformedBatches(List<PnErrorEvent> events) {
+        log.info("Building malformed event batches, total events: {}", events.size());
         List<List<PnErrorEvent>> batches = new ArrayList<>();
         List<PnErrorEvent> batch = new ArrayList<>();
         int batchBytes = 0;
@@ -58,12 +60,16 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
                 batch = new ArrayList<>();
                 batchBytes = 0;
             }
+            log.info("Adding malformed event to batch: {} bytes, batch size: {}, batch bytes: {}",
+                    eventBytes, batch.size() + 1, batchBytes + eventBytes);
             batch.add(event);
             batchBytes += eventBytes;
         }
         if (!batch.isEmpty()) {
             batches.add(batch);
         }
+
+        log.info("Built {} malformed event batches, total events: {}", batches.size(), events.size());
         return batches;
     }
 
@@ -76,6 +82,7 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
     }
 
     private int malformedEventSize(PnErrorEvent event) {
+        log.info("Calculating size of malformed event: {}", event);
         try {
             int payloadBytes = objectMapper.writerFor(PnErrorEvent.Payload.class)
                     .writeValueAsString(event.getPayload()).getBytes(StandardCharsets.UTF_8).length;

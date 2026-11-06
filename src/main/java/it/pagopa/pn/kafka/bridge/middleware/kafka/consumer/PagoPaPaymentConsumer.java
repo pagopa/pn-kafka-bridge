@@ -30,6 +30,7 @@ public class PagoPaPaymentConsumer {
             topics = "${pn.kafka-bridge.payment-events.topic-name}",
             containerFactory = "paymentEventsKafkaListenerContainerFactory")
     public void listen(List<ConsumerRecord<String, String>> records) {
+        log.info("Records : {}", records);
         log.info("Received messages from topics: {}, with keys: {}",
                 records.stream().map(ConsumerRecord::topic).distinct().toList(),
                 records.stream().map(ConsumerRecord::key).toList());

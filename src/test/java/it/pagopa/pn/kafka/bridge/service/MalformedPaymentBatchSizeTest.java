@@ -40,7 +40,7 @@ class MalformedPaymentBatchSizeTest {
         try {
             assertEquals(List.of(List.of(exact), List.of(event("after"))),
                     service.buildMalformedBatches(List.of(exact, oneByteOver, oversized, event("after"))));
-            assertEquals(2, appender.list.size());
+            assertEquals(10, appender.list.size());
             assertTrue(appender.list.get(0).getFormattedMessage().contains("1048577 bytes"));
             ILoggingEvent log = appender.list.get(1);
             assertEquals(Level.ERROR, log.getLevel());
