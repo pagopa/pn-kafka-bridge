@@ -132,6 +132,20 @@ class DelegationSelfCareMessageDeserializerTest {
     }
 
     @Test
+    void deserializeInvalidTimestampForPnProductWithExtraWhitespaceReturnsNullWithErrorLogTest() {
+        byte[] bytes = completeEvent("prod-pn-dev", "true")
+                .replace("2024-08-10T09:15:00.123Z", "not-a-date")
+                .replace("\"productId\":\"prod-pn-dev\"", "\"productId\"  :\n\t \"prod-pn-dev\"")
+                .getBytes();
+
+        DelegationSelfCareMessage actual = deserializer.deserialize("topic", bytes);
+
+        assertThat(actual).isNull();
+        ExpectedLoggingAssertions.assertThat(logging)
+                .hasErrorMessage("Error when deserializing byte[] to DelegationSelfCareMessage with input: " + new String(bytes));
+    }
+
+    @Test
     void deserializeInvalidTimestampForOtherProductReturnsNullWithoutErrorLogTest() {
         byte[] bytes = completeEvent("prod-io", "true").replace("2024-08-10T09:15:00.123Z", "not-a-date").getBytes();
 

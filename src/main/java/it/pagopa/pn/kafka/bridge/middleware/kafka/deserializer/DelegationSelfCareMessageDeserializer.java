@@ -25,7 +25,7 @@ public class DelegationSelfCareMessageDeserializer implements Deserializer<Deleg
             product = GENERIC_PRODUCT_PN;
         }
 
-        String regExp = "productId\" ?: ?\"" + product;
+        String regExp = "\"productId\"\\s*:\\s*\"" + Pattern.quote(product);
         log.info("RegExp to match in Deserializer: {}", regExp);
         PROD_PN_PATTERN = Pattern.compile(regExp);
     }
