@@ -270,22 +270,22 @@ Parameters:
     Default: '-Dreactor.netty.ioWorkerCount=50 --add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED'
     Description: Java tool options for the Fargate tasks
 
-  kafkaPaymentMaxPollRecords:
+  KafkaPaymentMaxPollRecords:
     Type: Number
     Default: 200
     Description: Max poll for payments records
 
-  kafkaPaymentFetchMinBytes:
+  KafkaPaymentFetchMinBytes:
     Type: Number
     Default: 256000
     Description: Minimum fetch bytes for payments records
 
-  kafkaPaymentFetchMaxWaitMs:
+  KafkaPaymentFetchMaxWaitMs:
     Type: Number
     Default: 10000
     Description: Maximum wait time in milliseconds for fetching payments records
 
-  kafkaPaymentConcurrency:
+  KafkaPaymentConcurrency:
     Type: Number
     Default: 1
     Description: Concurrency level for processing payments records
@@ -319,21 +319,21 @@ Resources:
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
-        ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_TOPIC_NAME=${KafkaOnboardingTopicName}'
-        ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_GROUP_ID=${KafkaOnboardingGroupId}'
-        ContainerEnvEntry5: !Sub 'SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=${KafkaOnboardingBootstrapServers}'
+        ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_TOPIC_NAME=${KafkaOnboardingTopicName}'
+        ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_GROUP_ID=${KafkaOnboardingGroupId}'
+        ContainerEnvEntry5: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_BOOTSTRAP_SERVERS=${KafkaOnboardingBootstrapServers}'
         ContainerEnvEntry6: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
         ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
         ContainerEnvEntry8: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry9: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
-        ContainerEnvEntry10: !Sub 'SPRING_KAFKA_CONSUMER_AUTO_COMMIT_INTERVAL=${KafkaBridgeAutoCommitIntervalMillis}'
-        ContainerEnvEntry11: !Sub 'KAFKA_PAYMENT_MAX_POLL_RECORDS=${kafkaPaymentMaxPollRecords}'
-        ContainerEnvEntry12: !Sub 'KAFKA_PAYMENT_FETCH_MIN_BYTES=${kafkaPaymentFetchMinBytes}'
-        ContainerEnvEntry13: !Sub 'KAFKA_PAYMENT_FETCH_MAX_WAIT_MS=${kafkaPaymentFetchMaxWaitMs}'
-        ContainerEnvEntry14: !Sub 'KAFKA_PAYMENT_CONCURRENCY=${kafkaPaymentConcurrency}'
+        ContainerEnvEntry10: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_PROPERTIES_AUTO_COMMIT_INTERVAL=${KafkaBridgeAutoCommitIntervalMillis}'
+        ContainerEnvEntry11: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_MAX_POLL_RECORDS=${KafkaPaymentMaxPollRecords}'
+        ContainerEnvEntry12: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_FETCH_MIN_BYTES=${KafkaPaymentFetchMinBytes}'
+        ContainerEnvEntry13: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_FETCH_MAX_WAIT_MS=${KafkaPaymentFetchMaxWaitMs}'
+        ContainerEnvEntry14: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_CONCURRENCY=${KafkaPaymentConcurrency}'
         ContainerEnvEntry15: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_TOPIC_NAME=${KafkaPaymentEventsTopicName}'
         ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_GROUP_ID=${KafkaPaymentEventsGroupId}'
-        ContainerEnvEntry17: !Sub 'KAFKA_PAYMENT_BOOTSTRAP_SERVERS=${KafkaPaymentEventsBootstrapServers}'
+        ContainerEnvEntry17: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_BOOTSTRAP_SERVERS=${KafkaPaymentEventsBootstrapServers}'
         ContainerEnvEntry18: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ERROR_EVENT_INPUT=${KafkaBridgePaymentsQueueDLQName}'
         ContainerEnvEntry19: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_KAFKA_BRIDGE_PAYMENTS=${KafkaBridgePaymentsQueueName}'
         ContainerEnvEntry20: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_PAYMENTS_TO_VERIFY=${PaymentsToVerifyQueueName}'

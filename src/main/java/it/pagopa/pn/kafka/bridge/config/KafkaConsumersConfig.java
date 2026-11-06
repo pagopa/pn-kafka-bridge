@@ -1,5 +1,6 @@
 package it.pagopa.pn.kafka.bridge.config;
 
+import lombok.CustomLog;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -15,18 +16,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@CustomLog
 public class KafkaConsumersConfig {
 
     @Bean
     @ConfigurationProperties("pn.kafka-bridge.onboarding-contracts")
     public KafkaClusterProperties onboardingContractsKafkaProps() {
-        return new KafkaClusterProperties();
+        KafkaClusterProperties properties = new KafkaClusterProperties();
+        log.info("Onboarding Contracts Kafka Properties: {}", properties);
+        return properties;
     }
 
     @Bean
     @ConfigurationProperties("pn.kafka-bridge.payment-events")
     public KafkaClusterProperties paymentEventsKafkaProps() {
-        return new KafkaClusterProperties();
+        KafkaClusterProperties properties = new KafkaClusterProperties();
+        log.info("Payment Events Kafka Properties: {}", properties);
+        return properties;
     }
 
     @Bean
