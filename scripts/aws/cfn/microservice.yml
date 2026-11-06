@@ -25,6 +25,21 @@ Parameters:
     Description: 'Kafka bootstrap servers'
     Default: ''
 
+  KafkaPaymentEventsTopicName:
+    Type: String
+    Description: 'Kafka topic name for payment events'
+    Default: ''
+
+  KafkaPaymentEventsGroupId:
+    Type: String
+    Description: 'Kafka group id for payment events'
+    Default: ''
+
+  KafkaPaymentEventsBootstrapServers:
+    Type: String
+    Description: 'Kafka server for payment events'
+    Default: ''
+
   SelfcarePnProductId:
     Type: String
     Description: 'Selfcare product id'
@@ -128,7 +143,37 @@ Parameters:
       - "true"
       - "false"
 
+  KafkaBridgePaymentsQueueName:
+    Type: String
+    Description: 'Name of the queue containing payments from pagoPa'
 
+  KafkaBridgePaymentsQueueARN:
+    Type: String
+    Description: 'Send and pull pagoPa payments to this queue'
+
+  KafkaBridgePaymentsQueueAlarmARN:
+    Type: String
+    Description: kafka bridge payments queue dlq alarm ARN
+
+  KafkaBridgePaymentsQueueAgeAlarmARN:
+    Type: String
+    Description: kafka bridge payments queue age alarm ARN
+
+  KafkaBridgePaymentsQueueDLQName:
+    Type: String
+    Description: kafka bridge payments dlq queue name
+
+  KafkaBridgePaymentsQueueDLQARN:
+    Type: String
+    Description: kafka bridge payments dlq queue ARN
+
+  KafkaBridge2NotificationCostServiceQueueName:
+    Type: String
+    Description: Events from pn-kafka-bridge TO pn-notification-cost-service queue name
+
+  KafkaBridge2NotificationCostServiceQueueARN:
+    Type: String
+    Description: Events from pn-kafka-bridge TO pn-notification-cost-service queue ARN
 
   # Log group parameters
   EcsLogGroup:
@@ -225,6 +270,26 @@ Parameters:
     Default: '-Dreactor.netty.ioWorkerCount=50 --add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED'
     Description: Java tool options for the Fargate tasks
 
+  KafkaPaymentMaxPollRecords:
+    Type: Number
+    Default: 200
+    Description: Max poll for payments records
+
+  KafkaPaymentFetchMinBytes:
+    Type: Number
+    Default: 256000
+    Description: Minimum fetch bytes for payments records
+
+  KafkaPaymentFetchMaxWaitMs:
+    Type: Number
+    Default: 10000
+    Description: Maximum wait time in milliseconds for fetching payments records
+
+  KafkaPaymentConcurrency:
+    Type: Number
+    Default: 1
+    Description: Concurrency level for processing payments records
+
 Resources:
 
   # PN-Kafka-Bridge microservice
@@ -254,15 +319,26 @@ Resources:
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'CORS_ALLOWED_DOMAINS=${CorsAllowedDomains}'
-        ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_TOPIC_NAME=${KafkaOnboardingTopicName}'
-        ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_GROUP_ID=${KafkaOnboardingGroupId}'
-        ContainerEnvEntry5: !Sub 'SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS=${KafkaOnboardingBootstrapServers}'
+        ContainerEnvEntry3: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_TOPIC_NAME=${KafkaOnboardingTopicName}'
+        ContainerEnvEntry4: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_GROUP_ID=${KafkaOnboardingGroupId}'
+        ContainerEnvEntry5: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_BOOTSTRAP_SERVERS=${KafkaOnboardingBootstrapServers}'
         ContainerEnvEntry6: !Sub 'PN_KAFKA_BRIDGE_SELFCARE_PN_PRODUCT_ID=${SelfcarePnProductId}'
         ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
         ContainerEnvEntry8: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry9: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
-        ContainerEnvEntry10: !Sub 'SPRING_KAFKA_CONSUMER_AUTO_COMMIT_INTERVAL=${KafkaBridgeAutoCommitIntervalMillis}'
+        ContainerEnvEntry10: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_PROPERTIES_AUTO_COMMIT_INTERVAL=${KafkaBridgeAutoCommitIntervalMillis}'
+        ContainerEnvEntry11: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_MAX_POLL_RECORDS=${KafkaPaymentMaxPollRecords}'
+        ContainerEnvEntry12: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_FETCH_MIN_BYTES=${KafkaPaymentFetchMinBytes}'
+        ContainerEnvEntry13: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_FETCH_MAX_WAIT_MS=${KafkaPaymentFetchMaxWaitMs}'
+        ContainerEnvEntry14: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_CONCURRENCY=${KafkaPaymentConcurrency}'
+        ContainerEnvEntry15: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_TOPIC_NAME=${KafkaPaymentEventsTopicName}'
+        ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_GROUP_ID=${KafkaPaymentEventsGroupId}'
+        ContainerEnvEntry17: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_BOOTSTRAP_SERVERS=${KafkaPaymentEventsBootstrapServers}'
+        ContainerEnvEntry18: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ERROR_EVENT_INPUT=${KafkaBridgePaymentsQueueDLQName}'
+        ContainerEnvEntry19: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_KAFKA_BRIDGE_PAYMENTS=${KafkaBridgePaymentsQueueName}'
+        ContainerEnvEntry20: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_PAYMENTS_TO_VERIFY=${KafkaBridge2NotificationCostServiceQueueName}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
+        ContainerSecret2: !Sub 'KAFKA_PAYMENT_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaPaymentEventsSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
         JavaToolOptions: !Ref JavaToolOptions
         JavaVersion: '25'
@@ -299,6 +375,9 @@ Resources:
               - sqs:SendMessageBatch
             Resource:
               - !Ref KafkaBridgeOnboardingQueueARN
+              - !Ref KafkaBridgePaymentsQueueARN
+              - !Ref KafkaBridgePaymentsQueueDLQARN
+              - !Ref KafkaBridge2NotificationCostServiceQueueARN
 
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
@@ -312,9 +391,12 @@ Resources:
           - - !GetAtt KafkaBridgeMicroservice.Outputs.FatalLogsMetricAlarmArn
             - !Ref KafkaBridgeOnboardingQueueAlarmARN
             - !Ref KafkaBridgeOnboardingQueueAgeAlarmARN
+            - !Ref KafkaBridgePaymentsQueueAlarmARN
+            - !Ref KafkaBridgePaymentsQueueAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref KafkaBridgeOnboardingQueueARN
+            - !Ref KafkaBridgePaymentsQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-kafka-bridge'
