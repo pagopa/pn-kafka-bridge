@@ -95,13 +95,13 @@ class PagoPaPaymentConsumerTest {
             var consumer = new PagoPaPaymentConsumer(service,
                     new ValidatorUtil(factory.getValidator()), objectMapper);
             consumer.listen(List.of(
-                    PaymentFlowFixtures.record(0, "{\"id\":\"valid-before\"}"),
+                    PaymentFlowFixtures.record(0, PaymentFlowFixtures.validPayment(0)),
                     PaymentFlowFixtures.record(1, invalidBody),
-                    PaymentFlowFixtures.record(2, "{\"id\":\"valid-after\"}")));
+                    PaymentFlowFixtures.record(2, PaymentFlowFixtures.validPayment(2))));
 
             verify(service).sendMessage(List.of(invalidBody));
             verify(service).sendMessage(payments.capture(), ingestionTimestamp.capture());
-            assertEquals(List.of("valid-before", "valid-after"),
+            assertEquals(List.of("payment-0", "payment-2"),
                     payments.getValue().stream().map(PagoPaPaymentMessage::getId).toList());
         }
     }

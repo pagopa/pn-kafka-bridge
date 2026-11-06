@@ -5,9 +5,9 @@ import it.pagopa.pn.api.dto.events.AbstractSqsMomProducer;
 import it.pagopa.pn.api.dto.events.PnNoticePaymentEvent;
 import software.amazon.awssdk.services.sqs.SqsClient;
 
-public class SqsNoticePaymentProducer extends AbstractSqsMomProducer<PnNoticePaymentEvent> {
+public class SqsPaymentsToVerifyProducer extends AbstractSqsMomProducer<PnNoticePaymentEvent> {
 
-    public SqsNoticePaymentProducer(SqsClient sqsClient, String topic, ObjectMapper objectMapper ) {
+    public SqsPaymentsToVerifyProducer(SqsClient sqsClient, String topic, ObjectMapper objectMapper ) {
         super(sqsClient, topic, objectMapper, PnNoticePaymentEvent.class );
     }
 }

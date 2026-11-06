@@ -167,13 +167,13 @@ Parameters:
     Type: String
     Description: kafka bridge payments dlq queue ARN
 
-  NoticePaymentInputQueueName:
+  PaymentsToVerifyQueueName:
     Type: String
-    Description: 'Queue name of Kafka bridge messages for notice payment'
+    Description: payments to verify queue name
 
-  NoticePaymentInputQueueARN:
+  PaymentsToVerifyQueueARN:
     Type: String
-    Description: 'Queue name of Kafka bridge messages for notice payment'
+    Description: payments to verify queue ARN
 
   # Log group parameters
   EcsLogGroup:
@@ -334,8 +334,9 @@ Resources:
         ContainerEnvEntry15: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_TOPIC_NAME=${KafkaPaymentEventsTopicName}'
         ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_GROUP_ID=${KafkaPaymentEventsGroupId}'
         ContainerEnvEntry17: !Sub 'KAFKA_PAYMENT_BOOTSTRAP_SERVERS=${KafkaPaymentEventsBootstrapServers}'
-        ContainerEnvEntry18: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_NOTICEPAYMENTINPUT=${NoticePaymentInputQueueName}'
-        ContainerEnvEntry19: !Sub 'PN_KAFKABRIDGE_SQSTOPICS_ERROREVENTINPUT=${KafkaBridgePaymentsQueueDLQName}'
+        ContainerEnvEntry18: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ERROR_EVENT_INPUT=${KafkaBridgePaymentsQueueDLQName}'
+        ContainerEnvEntry19: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_KAFKA_BRIDGE_PAYMENTS=${KafkaBridgePaymentsQueueName}'
+        ContainerEnvEntry20: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_PAYMENTS_TO_VERIFY=${PaymentsToVerifyQueueName}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         ContainerSecret2: !Sub 'KAFKA_PAYMENT_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaPaymentEventsSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
@@ -376,7 +377,7 @@ Resources:
               - !Ref KafkaBridgeOnboardingQueueARN
               - !Ref KafkaBridgePaymentsQueueARN
               - !Ref KafkaBridgePaymentsQueueDLQARN
-              - !Ref NoticePaymentInputQueueARN
+              - !Ref PaymentsToVerifyQueueARN
 
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
@@ -390,9 +391,12 @@ Resources:
           - - !GetAtt KafkaBridgeMicroservice.Outputs.FatalLogsMetricAlarmArn
             - !Ref KafkaBridgeOnboardingQueueAlarmARN
             - !Ref KafkaBridgeOnboardingQueueAgeAlarmARN
+            - !Ref KafkaBridgePaymentsQueueAlarmARN
+            - !Ref KafkaBridgePaymentsQueueAgeAlarmARN
         QueueArns: !Join
           - ','
           - - !Ref KafkaBridgeOnboardingQueueARN
+            - !Ref KafkaBridgePaymentsQueueARN
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-kafka-bridge'

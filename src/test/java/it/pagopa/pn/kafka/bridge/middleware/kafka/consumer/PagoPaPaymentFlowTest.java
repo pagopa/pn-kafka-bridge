@@ -7,7 +7,7 @@ import it.pagopa.pn.api.dto.events.PnErrorEvent;
 import it.pagopa.pn.api.dto.events.PnNoticePaymentEvent;
 import it.pagopa.pn.kafka.bridge.mapper.PagoPaPaymentMapper;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsErrorEventProducer;
-import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsNoticePaymentProducer;
+import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsPaymentsToVerifyProducer;
 import it.pagopa.pn.kafka.bridge.service.PagoPaPaymentServiceImpl;
 import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
@@ -55,10 +55,15 @@ class PagoPaPaymentFlowTest {
     @BeforeEach
     void setUp() {
         lenient().when(validatorUtil.isValidPaymentMessage(any(PagoPaPaymentMessage.class))).thenReturn(true);
-        consumer = new PagoPaPaymentConsumer(new PagoPaPaymentServiceImpl(
-                new SqsErrorEventProducer(sqsClient, ERROR_QUEUE, objectMapper),
-                new SqsNoticePaymentProducer(sqsClient, PAYMENT_QUEUE, objectMapper),
-                objectMapper, new PagoPaPaymentMapper()), validatorUtil, objectMapper);
+        consumer = new PagoPaPaymentConsumer(
+                new PagoPaPaymentServiceImpl(
+                    new SqsErrorEventProducer(sqsClient, ERROR_QUEUE, objectMapper),
+                    new SqsPaymentsToVerifyProducer(sqsClient, PAYMENT_QUEUE, objectMapper),
+                    objectMapper,
+                    new PagoPaPaymentMapper()
+                ),
+                validatorUtil,
+                objectMapper);
     }
 
     @Test

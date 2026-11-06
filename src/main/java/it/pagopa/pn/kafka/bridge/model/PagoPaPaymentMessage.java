@@ -14,10 +14,13 @@ public class PagoPaPaymentMessage {
     @Length(max = 20)
     private String id;
     private Instant timestamp;
+    @NotNull
     @Valid
     private DebtorPosition debtorPosition;
+    @NotNull
     @Valid
     private Creditor creditor;
+    @NotNull
     @Valid
     private PaymentInfo paymentInfo;
     //Campo valorizzato tramite header del messaggio di kafka
