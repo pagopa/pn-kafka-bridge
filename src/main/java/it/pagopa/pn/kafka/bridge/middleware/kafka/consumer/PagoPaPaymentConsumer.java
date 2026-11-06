@@ -36,8 +36,8 @@ public class PagoPaPaymentConsumer {
         Instant timestamp = Instant.now();
         Tuple<List<String>, List<PagoPaPaymentMessage>> arrays = createArraysForSqs(records);
 
-        pagoPaPaymentService.sendMessage(arrays._2(), timestamp);
         pagoPaPaymentService.sendMessage(arrays._1());
+        pagoPaPaymentService.sendMessage(arrays._2(), timestamp);
     }
 
     private Tuple<List<String>, List<PagoPaPaymentMessage>> createArraysForSqs(List<ConsumerRecord<String, String>> records) {
@@ -58,7 +58,7 @@ public class PagoPaPaymentConsumer {
 
     private PagoPaPaymentMessage createPagoPaPaymentMessage(ConsumerRecord<String, String> message) {
         try {
-            PagoPaPaymentMessage payment = objectMapper.readValue(message.value(), PagoPaPaymentMessage.class);
+            PagoPaPaymentMessage payment = message.value() == null ? null : objectMapper.readValue(message.value(), PagoPaPaymentMessage.class);
             if (payment == null) {
                 log.error("Null payment payload from topic {} partition {} at offset {}",
                         message.topic(), message.partition(), message.offset());

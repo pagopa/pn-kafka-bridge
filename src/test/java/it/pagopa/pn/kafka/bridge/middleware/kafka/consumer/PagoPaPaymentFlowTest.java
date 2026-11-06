@@ -10,14 +10,18 @@ import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsErrorEventProd
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsPaymentsToVerifyProducer;
 import it.pagopa.pn.kafka.bridge.service.PagoPaPaymentServiceImpl;
 import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
-import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.record.TimestampType;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -46,15 +50,13 @@ class PagoPaPaymentFlowTest {
 
     @Mock
     private SqsClient sqsClient;
-    @Mock
-    private ValidatorUtil validatorUtil;
+    private static final ValidatorFactory VALIDATOR_FACTORY = Validation.buildDefaultValidatorFactory();
 
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
     private PagoPaPaymentConsumer consumer;
 
     @BeforeEach
     void setUp() {
-        lenient().when(validatorUtil.isValidPaymentMessage(any(PagoPaPaymentMessage.class))).thenReturn(true);
         consumer = new PagoPaPaymentConsumer(
                 new PagoPaPaymentServiceImpl(
                     new SqsErrorEventProducer(sqsClient, ERROR_QUEUE, objectMapper),
@@ -62,8 +64,13 @@ class PagoPaPaymentFlowTest {
                     objectMapper,
                     new PagoPaPaymentMapper()
                 ),
-                validatorUtil,
+                new ValidatorUtil(VALIDATOR_FACTORY.getValidator()),
                 objectMapper);
+    }
+
+    @AfterAll
+    static void closeValidatorFactory() {
+        VALIDATOR_FACTORY.close();
     }
 
     @Test
@@ -206,14 +213,24 @@ class PagoPaPaymentFlowTest {
         verifyNoInteractions(sqsClient);
     }
 
-    @Test
-    void invalidNumericPaymentFieldFailsBeforeSendingValidPaymentBatches() {
-        String invalid = validPayment(1).replace("\"totalNotice\": \"2\"", "\"totalNotice\": \"invalid\"");
+    @ParameterizedTest
+    @ValueSource(strings = {"invalid", "2147483648", "-2147483649", "-1", "+1", "", "1.5", " 2", "2 "})
+    void routesInvalidTotalNoticeToErrorQueueWithoutBlockingValidPayments(String totalNotice) throws Exception {
+        successfulSqs();
+        String invalid = validPayment(1)
+                .replace("\"totalNotice\": \"2\"", "\"totalNotice\": \"" + totalNotice + "\"");
 
-        assertThrows(NumberFormatException.class,
-                () -> consumer.listen(List.of(record(0, validPayment(0)), record(1, invalid))));
+        consumer.listen(List.of(record(0, validPayment(0)), record(1, invalid), record(2, validPayment(2))));
 
-        verifyNoInteractions(sqsClient);
+        List<SendMessageBatchRequest> requests = requests(2);
+        SendMessageBatchRequest errorRequest = requestFor(requests, ERROR_QUEUE);
+        assertEquals(1, errorRequest.entries().size());
+        assertEquals(invalid, objectMapper.readValue(
+                errorRequest.entries().get(0).messageBody(), PnErrorEvent.Payload.class).getOriginalMessage());
+        SendMessageBatchRequest paymentRequest = requestFor(requests, PAYMENT_QUEUE);
+        assertEquals(2, paymentRequest.entries().size());
+        assertEquals("payment-0", payment(paymentRequest.entries().get(0)).getPaymentId());
+        assertEquals("payment-2", payment(paymentRequest.entries().get(1)).getPaymentId());
     }
 
     @Test
@@ -229,17 +246,30 @@ class PagoPaPaymentFlowTest {
     }
 
     @Test
-    void errorQueueFailurePreventsSendingValidPayments() {
+    void propagatesErrorQueueFailureAfterSendingValidPayments() {
         when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
-                .thenReturn(GetQueueUrlResponse.builder().queueUrl(QUEUE_URL_PREFIX + ERROR_QUEUE).build());
+                .thenAnswer(invocation -> {
+                    GetQueueUrlRequest request = invocation.getArgument(0);
+                    return GetQueueUrlResponse.builder().queueUrl(QUEUE_URL_PREFIX + request.queueName()).build();
+                });
         var failure = SqsException.builder().message("Error queue unavailable").statusCode(503).build();
-        when(sqsClient.sendMessageBatch(any(SendMessageBatchRequest.class))).thenThrow(failure);
+        when(sqsClient.sendMessageBatch(any(SendMessageBatchRequest.class))).thenAnswer(invocation -> {
+            SendMessageBatchRequest request = invocation.getArgument(0);
+            if (request.queueUrl().equals(QUEUE_URL_PREFIX + ERROR_QUEUE)) {
+                throw failure;
+            }
+            return SendMessageBatchResponse.builder().successful(request.entries().stream()
+                    .map(entry -> SendMessageBatchResultEntry.builder().id(entry.id()).messageId("sqs-message").build())
+                    .toList()).build();
+        });
 
         assertSame(failure, assertThrows(SqsException.class,
                 () -> consumer.listen(List.of(record(0, "{invalid"), record(1, validPayment(1))))));
 
-        assertEquals(QUEUE_URL_PREFIX + ERROR_QUEUE, requests(1).get(0).queueUrl());
-        verify(sqsClient, times(1)).getQueueUrl(any(GetQueueUrlRequest.class));
+        List<SendMessageBatchRequest> requests = requests(2);
+        assertEquals(QUEUE_URL_PREFIX + PAYMENT_QUEUE, requests.get(0).queueUrl());
+        assertEquals(QUEUE_URL_PREFIX + ERROR_QUEUE, requests.get(1).queueUrl());
+        verify(sqsClient, times(2)).getQueueUrl(any(GetQueueUrlRequest.class));
     }
 
     private void successfulSqs() {

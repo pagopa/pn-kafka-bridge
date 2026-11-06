@@ -91,6 +91,19 @@ class PagoPaPaymentConsumerTest {
             "null"
     })
     void routesInvalidRecordToMalformedMessagesWithoutDiscardingValidRecords(String invalidBody) {
+        assertMalformedRouting(invalidBody);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"invalid", "2147483648", "-2147483649", "-1", "+1", "", "1.5", " 2", "2 "})
+    void routesInvalidTotalNoticeWithoutDiscardingValidRecords(String totalNotice) {
+        String invalidBody = PaymentFlowFixtures.validPayment(1)
+                .replace("\"totalNotice\": \"2\"", "\"totalNotice\": \"" + totalNotice + "\"");
+
+        assertMalformedRouting(invalidBody);
+    }
+
+    private void assertMalformedRouting(String invalidBody) {
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             var consumer = new PagoPaPaymentConsumer(service,
                     new ValidatorUtil(factory.getValidator()), objectMapper);

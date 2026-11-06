@@ -4,8 +4,11 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.Instant;
 
@@ -30,7 +33,6 @@ class PagoPaPaymentMessageValidationTest {
             "debtorPosition.noticeNumber, 1000",
             "creditor.idPA, 1000",
             "creditor.companyName, 1000",
-            "paymentInfo.totalNotice, 1000",
             "paymentInfo.paymentChannel, 1000"
     })
     void enforcesStringLengthThroughCascadedValidation(String property, int maxLength) {
@@ -44,6 +46,44 @@ class PagoPaPaymentMessageValidationTest {
         assertThat(VALIDATOR.validate(message))
                 .singleElement()
                 .satisfies(violation -> assertThat(violation.getPropertyPath().toString()).isEqualTo(property));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"0", "2", "2147483647", "0002"})
+    void acceptsOptionalTotalNoticeWithinIntegerRange(String totalNotice) {
+        PagoPaPaymentMessage message = validMessage();
+        message.getPaymentInfo().setTotalNotice(totalNotice);
+
+        assertThat(VALIDATOR.validate(message)).isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "invalid", "2147483648", "-2147483649",
+            "-1", "+1", "1.5", "1e2", " 2", "2 "})
+    void rejectsMalformedTotalNoticeThroughCascadedValidation(String totalNotice) {
+        PagoPaPaymentMessage message = validMessage();
+        message.getPaymentInfo().setTotalNotice(totalNotice);
+
+        assertThat(VALIDATOR.validate(message))
+                .isNotEmpty()
+                .allSatisfy(violation -> assertThat(violation.getPropertyPath().toString())
+                        .isEqualTo("paymentInfo.totalNotice"));
+    }
+
+    @Test
+    void enforcesTotalNoticeLengthWithoutViolatingNumericConstraints() {
+        PagoPaPaymentMessage message = validMessage();
+        message.getPaymentInfo().setTotalNotice("0".repeat(999) + "2");
+
+        assertThat(VALIDATOR.validate(message)).isEmpty();
+
+        message.getPaymentInfo().setTotalNotice("0".repeat(1000) + "2");
+
+        assertThat(VALIDATOR.validate(message))
+                .singleElement()
+                .satisfies(violation -> assertThat(violation.getPropertyPath().toString())
+                        .isEqualTo("paymentInfo.totalNotice"));
     }
 
     private static PagoPaPaymentMessage validMessage() {
@@ -71,7 +111,6 @@ class PagoPaPaymentMessageValidationTest {
             case "debtorPosition.noticeNumber" -> message.getDebtorPosition().setNoticeNumber(value);
             case "creditor.idPA" -> message.getCreditor().setIdPA(value);
             case "creditor.companyName" -> message.getCreditor().setCompanyName(value);
-            case "paymentInfo.totalNotice" -> message.getPaymentInfo().setTotalNotice(value);
             case "paymentInfo.paymentChannel" -> message.getPaymentInfo().setPaymentChannel(value);
             default -> throw new IllegalArgumentException("Unknown payment property: " + property);
         }

@@ -4,7 +4,7 @@
     "KafkaOnboardingGroupId": "pn-kafka-bridge-dev",
     "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
     "KafkaPaymentEventsTopicName": "sc-contracts",
-    "KafkaPaymentEventsGroupId": "pn-kafka-bridge-dev",
+    "KafkaPaymentEventsGroupId": "pn-kafka-bridge-payments-dev",
     "KafkaPaymentEventsBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
     "SelfcarePnProductId": "prod-pn-dev",
     "MaxTasksNumber": "1",
