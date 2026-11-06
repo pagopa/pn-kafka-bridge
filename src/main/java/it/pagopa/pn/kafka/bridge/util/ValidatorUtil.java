@@ -1,5 +1,6 @@
 package it.pagopa.pn.kafka.bridge.util;
 
+import it.pagopa.pn.kafka.bridge.model.DelegationSelfCareMessage;
 import it.pagopa.pn.kafka.bridge.model.OnboardingSelfCareMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,15 @@ public class ValidatorUtil {
         Set<ConstraintViolation<OnboardingSelfCareMessage>> validateResults = validator.validate(inputMessage);
         if(! CollectionUtils.isEmpty(validateResults)) {
             log.error("[{}] Payload received is not valid: {}", inputMessage.getInternalIstitutionID(), validateResults);
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isValidDelegationSelfCareMessage(DelegationSelfCareMessage inputMessage) {
+        Set<ConstraintViolation<DelegationSelfCareMessage>> validateResults = validator.validate(inputMessage);
+        if(! CollectionUtils.isEmpty(validateResults)) {
+            log.error("[{}] Payload received is not valid: {}", inputMessage.getDelegationId(), validateResults);
             return false;
         }
         return true;
