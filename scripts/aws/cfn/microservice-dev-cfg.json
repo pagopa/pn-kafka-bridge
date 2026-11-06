@@ -5,7 +5,7 @@
     "KafkaOnboardingBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
     "KafkaPaymentEventsTopicName": "payment_events",
     "KafkaPaymentEventsGroupId": "pn-kafka-bridge-payments-dev",
-    "KafkaPaymentEventsBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
+    "KafkaPaymentEventsBootstrapServers": "10.1.41.75:9092",
     "SelfcarePnProductId": "prod-pn-dev",
     "MaxTasksNumber": "1",
     "PnCronAnalyzer": "-",
