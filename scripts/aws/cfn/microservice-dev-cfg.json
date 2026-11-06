@@ -11,9 +11,9 @@
     "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false",
     "MountEfs": "false",
-    "KafkaPaymentMaxPollRecords": 200,
-    "KafkaPaymentFetchMinBytes": 256000,
-    "KafkaPaymentFetchMaxWaitMs": 10000,
-    "KafkaPaymentConcurrency": 1
+    "KafkaPaymentMaxPollRecords": "200",
+    "KafkaPaymentFetchMinBytes": "256000",
+    "KafkaPaymentFetchMaxWaitMs": "10000",
+    "KafkaPaymentConcurrency": "1"
   }
 }
