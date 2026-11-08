@@ -9,6 +9,7 @@ import it.pagopa.pn.kafka.bridge.mapper.PagoPaPaymentMapper;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsErrorEventProducer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsPaymentsToVerifyProducer;
 import it.pagopa.pn.kafka.bridge.service.PagoPaPaymentServiceImpl;
+import it.pagopa.pn.kafka.bridge.util.KafkaPaymentEventAgeCache;
 import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
@@ -65,7 +66,9 @@ class PagoPaPaymentFlowTest {
                     new PagoPaPaymentMapper()
                 ),
                 new ValidatorUtil(VALIDATOR_FACTORY.getValidator()),
-                objectMapper);
+                objectMapper,
+                new KafkaPaymentEventAgeCache()
+        );
     }
 
     @AfterAll
