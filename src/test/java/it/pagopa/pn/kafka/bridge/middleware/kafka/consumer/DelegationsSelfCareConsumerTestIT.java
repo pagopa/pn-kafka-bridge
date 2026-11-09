@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.neuland.assertj.logging.ExpectedLogging;
 import de.neuland.assertj.logging.ExpectedLoggingAssertions;
 import it.pagopa.pn.api.dto.events.PnPtDelegationEvent;
+import it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs.KafkaBridgePaymentsConsumer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsDelegationsProducer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsOnboardingProducer;
 import it.pagopa.pn.kafka.bridge.model.DelegationSelfCareMessage;
@@ -52,6 +53,12 @@ class DelegationsSelfCareConsumerTestIT {
 
     @MockitoSpyBean
     private DelegationService delegationService;
+
+    @MockitoBean
+    private PagoPaPaymentConsumer pagoPaPaymentConsumer;
+
+    @MockitoBean
+    private KafkaBridgePaymentsConsumer kafkaBridgePaymentsConsumer;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
