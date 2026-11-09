@@ -3,6 +3,7 @@ package it.pagopa.pn.kafka.bridge.middleware.kafka.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import it.pagopa.pn.kafka.bridge.service.PagoPaPaymentService;
+import it.pagopa.pn.kafka.bridge.util.KafkaPaymentEventAgeCache;
 import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
 import jakarta.validation.Validation;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -35,6 +36,8 @@ class PagoPaPaymentConsumerTest {
     private ValidatorUtil validatorUtil;
     @Mock
     private ConsumerRecord<String, String> record;
+    @Mock
+    private KafkaPaymentEventAgeCache kafkaPaymentEventAgeCache;
     @Captor
     private ArgumentCaptor<List<PagoPaPaymentMessage>> payments;
     @Captor
@@ -56,11 +59,11 @@ class PagoPaPaymentConsumerTest {
         Instant before = Instant.now();
         when(validatorUtil.isValidPaymentMessage(any(PagoPaPaymentMessage.class))).thenReturn(true);
 
-        new PagoPaPaymentConsumer(service, validatorUtil, objectMapper).listen(List.of(record));
+        new PagoPaPaymentConsumer(service, validatorUtil, objectMapper, kafkaPaymentEventAgeCache).listen(List.of(record));
 
         Instant after = Instant.now();
         verify(service).sendMessage(payments.capture(), ingestionTimestamp.capture());
-        PagoPaPaymentMessage payment = payments.getValue().get(0);
+        PagoPaPaymentMessage payment = payments.getValue().getFirst();
         assertEquals(published, payment.getPagopaPublishedTimestamp());
         assertEquals(Instant.parse("2026-10-20T08:00:00Z"), payment.getTimestamp());
         assertEquals("notice", payment.getDebtorPosition().getNoticeNumber());
@@ -77,7 +80,7 @@ class PagoPaPaymentConsumerTest {
         when(record.timestamp()).thenReturn(-1L);
 
         assertThrows(IllegalArgumentException.class,
-                () -> new PagoPaPaymentConsumer(service, validatorUtil, objectMapper).listen(List.of(record)));
+                () -> new PagoPaPaymentConsumer(service, validatorUtil, objectMapper, kafkaPaymentEventAgeCache).listen(List.of(record)));
 
         verifyNoInteractions(service);
     }
@@ -106,7 +109,7 @@ class PagoPaPaymentConsumerTest {
     private void assertMalformedRouting(String invalidBody) {
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             var consumer = new PagoPaPaymentConsumer(service,
-                    new ValidatorUtil(factory.getValidator()), objectMapper);
+                    new ValidatorUtil(factory.getValidator()), objectMapper, kafkaPaymentEventAgeCache);
             consumer.listen(List.of(
                     PaymentFlowFixtures.record(0, PaymentFlowFixtures.validPayment(0)),
                     PaymentFlowFixtures.record(1, invalidBody),

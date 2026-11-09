@@ -290,6 +290,15 @@ Parameters:
     Default: 1
     Description: Concurrency level for processing payments records
 
+  MetricFormatType:
+    Type: String
+    Description: 'Metric format type'
+
+  PnKafkaBridgeMetricsPaymentsEventsCron:
+    Type: String
+    Description: 'Cron expression for scheduling the publishing of payment events metrics'
+    Default: '0 */5 * * * *'
+
 Resources:
 
   # PN-Kafka-Bridge microservice
@@ -337,6 +346,8 @@ Resources:
         ContainerEnvEntry18: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ERROR_EVENT_INPUT=${KafkaBridgePaymentsQueueDLQName}'
         ContainerEnvEntry19: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_KAFKA_BRIDGE_PAYMENTS=${KafkaBridgePaymentsQueueName}'
         ContainerEnvEntry20: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_PAYMENTS_TO_VERIFY=${KafkaBridge2NotificationCostServiceQueueName}'
+        ContainerEnvEntry21: !Sub 'METRIC_FORMAT_TYPE=${MetricFormatType}'
+        ContainerEnvEntry22: !Sub 'PN_KAFKA_BRIDGE_METRICS_PAYMENTS_EVENTS_CRON=${PnKafkaBridgeMetricsPaymentsEventsCron}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         ContainerSecret2: !Sub 'KAFKA_PAYMENT_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaPaymentEventsSaslJaasConfig:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets

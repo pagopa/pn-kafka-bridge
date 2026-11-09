@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import it.pagopa.pn.kafka.bridge.service.PagoPaPaymentService;
+import it.pagopa.pn.kafka.bridge.util.KafkaPaymentEventAgeCache;
 import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
 import lombok.AllArgsConstructor;
 import lombok.CustomLog;
@@ -24,6 +25,7 @@ public class PagoPaPaymentConsumer {
     private final PagoPaPaymentService pagoPaPaymentService;
     private final ValidatorUtil validatorUtil;
     private final ObjectMapper objectMapper;
+    private final KafkaPaymentEventAgeCache kafkaPaymentEventAgeCache;
 
     @KafkaListener(
             id = "${pn.kafka-bridge.payment-events.group-id}",
@@ -31,14 +33,25 @@ public class PagoPaPaymentConsumer {
             containerFactory = "paymentEventsKafkaListenerContainerFactory")
     public void listen(List<ConsumerRecord<String, String>> records) {
         log.info("Records : {}", records);
-        log.info("Received messages from topics: {}, with keys: {}",
-                records.stream().map(ConsumerRecord::topic).distinct().toList(),
-                records.stream().map(ConsumerRecord::key).toList());
-        Instant timestamp = Instant.now();
+        Instant startExecutionInstant = Instant.now();
+        traceRecordsAge(records, startExecutionInstant);
+
         Tuple<List<String>, List<PagoPaPaymentMessage>> arrays = createArraysForSqs(records);
 
         pagoPaPaymentService.sendMessage(arrays._1());
-        pagoPaPaymentService.sendMessage(arrays._2(), timestamp);
+        pagoPaPaymentService.sendMessage(arrays._2(), startExecutionInstant);
+    }
+
+    private void traceRecordsAge(List<ConsumerRecord<String, String>> records, Instant startExecutionInstant) {
+        try {
+            long nowMs = startExecutionInstant.toEpochMilli();
+            for (ConsumerRecord<String, String> r : records) {
+                log.debug("Received messages from topics: {}, with keys: {}", r.topic(), r.key());
+                kafkaPaymentEventAgeCache.recordAge(r.partition(), Math.max(nowMs - r.timestamp(), 0));
+            }
+        } catch (Exception e) {
+            log.error("Error while registering records age", e);
+        }
     }
 
     private Tuple<List<String>, List<PagoPaPaymentMessage>> createArraysForSqs(List<ConsumerRecord<String, String>> records) {
