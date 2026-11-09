@@ -30,10 +30,15 @@ public class PnKafkaBridgeConfig {
 
     private KafkaClusterProperties delegations;
 
+    private KafkaClusterProperties paymentEvents;
+
     @Data
     public static class SqsTopics {
         private String onboardingInput;
         private String delegationsInput;
+        private String errorEventInput;
+        private String kafkaBridgePayments;
+        private String paymentsToVerify;
     }
 
     @Data

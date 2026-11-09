@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.neuland.assertj.logging.ExpectedLogging;
 import de.neuland.assertj.logging.ExpectedLoggingAssertions;
+import it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs.KafkaBridgePaymentsConsumer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsOnboardingProducer;
 import it.pagopa.pn.kafka.bridge.model.OnboardingSelfCareMessage;
 import it.pagopa.pn.kafka.bridge.service.OnboardingService;
@@ -46,6 +47,12 @@ class OnboardingSelfCareConsumerTestIT {
 
     @MockitoBean
     private DelegationsSelfCareConsumer delegationsSelfCareConsumer;
+
+    @MockitoBean
+    private PagoPaPaymentConsumer pagoPaPaymentConsumer;
+
+    @MockitoBean
+    private KafkaBridgePaymentsConsumer kafkaBridgePaymentsConsumer;
 
     @MockitoSpyBean
     private OnboardingService onboardingService;

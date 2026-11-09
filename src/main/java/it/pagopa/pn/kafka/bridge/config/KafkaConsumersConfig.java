@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.util.backoff.FixedBackOff;
 
 import java.time.Duration;
 import java.util.Map;
@@ -37,6 +40,18 @@ public class KafkaConsumersConfig {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, Object>();
         factory.setConsumerFactory(consumerFactory(p.getDelegations()));
         factory.getContainerProperties().setAuthExceptionRetryInterval(authExceptionRetryInterval);
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> paymentEventsKafkaListenerContainerFactory(PnKafkaBridgeConfig p) {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, String>();
+        factory.setConsumerFactory(consumerFactory(p.getPaymentEvents()));
+        factory.setBatchListener(true);
+        factory.setConcurrency(p.getPaymentEvents().getConcurrency());
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
+        factory.setCommonErrorHandler(
+                new DefaultErrorHandler(new FixedBackOff(5_000L, FixedBackOff.UNLIMITED_ATTEMPTS)));
         return factory;
     }
 

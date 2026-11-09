@@ -6,10 +6,18 @@
     "KafkaDelegationsTopicName": "sc-delegations",
     "KafkaDelegationsGroupId": "pn-kafka-bridge-delegations-dev",
     "KafkaDelegationsBootstrapServers": "selc-u-eventhub-ns.servicebus.windows.net:9093",
+    "KafkaPaymentEventsTopicName": "payment_events",
+    "KafkaPaymentEventsGroupId": "pn-kafka-bridge-payments-dev",
+    "KafkaPaymentEventsBootstrapServers": "10.1.41.75:9092",
     "SelfcarePnProductId": "prod-pn-dev",
     "MaxTasksNumber": "1",
     "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false",
-    "MountEfs": "false"
+    "MountEfs": "false",
+    "KafkaPaymentMaxPollRecords": "200",
+    "KafkaPaymentFetchMinBytes": "256000",
+    "KafkaPaymentFetchMaxWaitMs": "10000",
+    "KafkaPaymentConcurrency": "1",
+    "MetricFormatType": "EMF"
   }
 }
