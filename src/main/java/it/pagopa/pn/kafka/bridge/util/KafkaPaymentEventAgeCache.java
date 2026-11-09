@@ -1,5 +1,7 @@
 package it.pagopa.pn.kafka.bridge.util;
 
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -8,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class KafkaPaymentEventAgeCache {
 
     private final ConcurrentHashMap<Integer, Long> cache = new ConcurrentHashMap<>();
