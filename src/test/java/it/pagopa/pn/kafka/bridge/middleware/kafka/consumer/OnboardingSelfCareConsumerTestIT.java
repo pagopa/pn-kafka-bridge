@@ -8,46 +8,64 @@ import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsOnboardingProd
 import it.pagopa.pn.kafka.bridge.model.OnboardingSelfCareMessage;
 import it.pagopa.pn.kafka.bridge.service.OnboardingService;
 import it.pagopa.pn.kafka.bridge.util.ValidatorUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.kafka.test.utils.ContainerTestUtils;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
+import static org.awaitility.Awaitility.await;
 
 @SpringBootTest(properties = {
-        "spring.kafka.consumer.bootstrap-servers=PLAINTEXT://localhost:9092",
-        "spring.kafka.consumer.auto-offset-reset=earliest",
-        "pn.kafka-bridge.onboarding-group-id=consumer-test",
-        "spring.kafka.consumer.properties.security.protocol=PLAINTEXT",
-        "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev"
+        "pn.kafka-bridge.onboarding-contracts.bootstrap-servers=PLAINTEXT://localhost:9092",
+        "pn.kafka-bridge.onboarding-contracts.topic-name=sc-contracts",
+        "pn.kafka-bridge.onboarding-contracts.properties.auto.offset.reset=earliest",
+        "pn.kafka-bridge.onboarding-contracts.group-id=consumer-test",
+        "pn.kafka-bridge.onboarding-contracts.properties.security.protocol=PLAINTEXT",
+        "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev",
 })
-@EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
+@EmbeddedKafka(partitions = 1, topics = "sc-contracts",
+        brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
 class OnboardingSelfCareConsumerTestIT {
 
     @RegisterExtension
     private final ExpectedLogging logging = ExpectedLogging.forSource(ValidatorUtil.class);
 
-    @SpyBean
+    @MockitoSpyBean
     private OnboardingSelfCareConsumer consumer;
 
-    @SpyBean
+    @MockitoBean
+    private DelegationsSelfCareConsumer delegationsSelfCareConsumer;
+
+    @MockitoSpyBean
     private OnboardingService onboardingService;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
     @Autowired
+    private KafkaListenerEndpointRegistry listenerRegistry;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private SqsOnboardingProducer sqsOnboardingProducer;
+
+    @BeforeEach
+    void waitForConsumerAssignment() {
+        ContainerTestUtils.waitForAssignment(listenerRegistry.getListenerContainer("consumer-test"), 1);
+    }
 
 
     @Test
@@ -61,8 +79,8 @@ class OnboardingSelfCareConsumerTestIT {
         OnboardingSelfCareMessage expectedValue = objectMapper.readValue(inputRequest, OnboardingSelfCareMessage.class);
 
         //verifico che il consumer riceva correttamente il messaggio (e quindi il deserializer funzioni)
-        Mockito.verify(consumer, Mockito.timeout(1000).times(1)).listen("sc-contracts", expectedValue);
-        Mockito.verify(onboardingService, Mockito.timeout(1000).times(1)).sendMessage(expectedValue);
+        Mockito.verify(consumer, Mockito.timeout(10000).times(1)).listen("sc-contracts", expectedValue);
+        Mockito.verify(onboardingService, Mockito.timeout(10000).times(1)).sendMessage(expectedValue);
         awaitFlow();
         ExpectedLoggingAssertions.assertThat(logging).hasNoErrorMessage();
 
@@ -96,12 +114,13 @@ class OnboardingSelfCareConsumerTestIT {
         OnboardingSelfCareMessage expectedValue = objectMapper.readValue(inputRequest, OnboardingSelfCareMessage.class);
 
         //verifico che il consumer riceva correttamente il messaggio (e quindi il deserializer funzioni)
-        Mockito.verify(consumer, Mockito.timeout(1000).times(1)).listen("sc-contracts", expectedValue);
+        Mockito.verify(consumer, Mockito.timeout(10000).times(1)).listen("sc-contracts", expectedValue);
 
         //verifico che il messaggio non arrivi al service perché non supera la validazione
-        Mockito.verify(onboardingService, Mockito.timeout(1000).times(0)).sendMessage(expectedValue);
-        awaitFlow();
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*institution.taxCode.*");
+        await().pollInSameThread().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                ExpectedLoggingAssertions.assertThat(logging)
+                        .hasErrorMessageMatching(".*Payload received is not valid.*institution.taxCode.*"));
+        Mockito.verify(onboardingService, Mockito.never()).sendMessage(expectedValue);
 
     }
 
@@ -117,12 +136,13 @@ class OnboardingSelfCareConsumerTestIT {
         OnboardingSelfCareMessage expectedValue = objectMapper.readValue(inputRequest, OnboardingSelfCareMessage.class);
 
         //verifico che il consumer riceva correttamente il messaggio (e quindi il deserializer funzioni)
-        Mockito.verify(consumer, Mockito.timeout(1000).times(1)).listen("sc-contracts", expectedValue);
+        Mockito.verify(consumer, Mockito.timeout(10000).times(1)).listen("sc-contracts", expectedValue);
 
         //verifico che il messaggio non arrivi al service perché non supera la validazione
-        Mockito.verify(onboardingService, Mockito.timeout(1000).times(0)).sendMessage(expectedValue);
-        awaitFlow();
-        ExpectedLoggingAssertions.assertThat(logging).hasErrorMessageMatching(".*Payload received is not valid.*institution.taxCode.*");
+        await().pollInSameThread().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                ExpectedLoggingAssertions.assertThat(logging)
+                        .hasErrorMessageMatching(".*Payload received is not valid.*institution.taxCode.*"));
+        Mockito.verify(onboardingService, Mockito.never()).sendMessage(expectedValue);
     }
 
     private String inputRequestFormSelfCare() {

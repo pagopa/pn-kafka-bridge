@@ -24,11 +24,7 @@ public class DelegationsSelfCareConsumer {
             id = "${pn.kafka-bridge.delegations.group-id}",
             topics = "${pn.kafka-bridge.delegations.topic-name}",
             containerFactory = "delegationsKafkaListenerContainerFactory",
-            filter = "delegationsKafkaFilter",
-            properties = {
-                    "value.deserializer=it.pagopa.pn.kafka.bridge.middleware.kafka.deserializer.DelegationSelfCareMessageDeserializer"
-            }
-    )
+            filter = "delegationsKafkaFilter")
     public void listen(@Header(KafkaHeaders.RECEIVED_TOPIC) String topic, @Payload DelegationSelfCareMessage inputMessage) {
         log.info("[{}] Received message from topic: {}, with value: {}", inputMessage.getDelegationId(), topic, inputMessage);
         if(validatorUtil.isValidDelegationSelfCareMessage(inputMessage)) {

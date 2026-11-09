@@ -12,11 +12,11 @@ public class MiddlewareConfig {
 
     @Bean
     SqsOnboardingProducer sqsNotificationPaidProducer(SqsClient sqs, ObjectMapper objMapper, PnKafkaBridgeConfig cfg) {
-        return new SqsOnboardingProducer( sqs, cfg.getOnboarding().getQueueName(), objMapper);
+        return new SqsOnboardingProducer( sqs, cfg.getSqsTopics().getOnboardingInput(), objMapper);
     }
 
     @Bean
     SqsDelegationsProducer sqsDelegationsProducer(SqsClient sqs, ObjectMapper objMapper, PnKafkaBridgeConfig cfg) {
-        return new SqsDelegationsProducer( sqs, cfg.getDelegations().getQueueName(), objMapper);
+        return new SqsDelegationsProducer( sqs, cfg.getSqsTopics().getDelegationsInput(), objMapper);
     }
 }

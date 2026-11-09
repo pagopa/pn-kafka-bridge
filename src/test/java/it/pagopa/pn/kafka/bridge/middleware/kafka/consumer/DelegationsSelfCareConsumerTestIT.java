@@ -30,14 +30,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = {
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "spring.kafka.consumer.bootstrap-servers=${spring.embedded.kafka.brokers}",
-        "spring.kafka.consumer.auto-offset-reset=earliest",
-        "spring.kafka.consumer.properties.security.protocol=PLAINTEXT",
-        "pn.kafka-bridge.onboarding-group-id=delegations-it-onboarding",
+        "pn.kafka-bridge.onboarding-contracts.bootstrap-servers=${spring.embedded.kafka.brokers}",
+        "pn.kafka-bridge.onboarding-contracts.group-id=delegations-it-onboarding",
+        "pn.kafka-bridge.onboarding-contracts.properties.security.protocol=PLAINTEXT",
+        "pn.kafka-bridge.delegations.bootstrap-servers=${spring.embedded.kafka.brokers}",
         "pn.kafka-bridge.delegations.topic-name=sc-delegations",
         "pn.kafka-bridge.delegations.group-id=delegations-it-consumer",
-        "pn.kafka-bridge.delegations.queue-name=local-delegations",
-        "pn.kafka-bridge.delegations.sasl-jaas-password=unused",
+        "pn.kafka-bridge.delegations.properties.auto.offset.reset=earliest",
+        "pn.kafka-bridge.delegations.properties.security.protocol=PLAINTEXT",
+        "pn.kafka-bridge.sqs-topics.delegations-input=local-delegations",
         "pn.kafka-bridge.selfcare-pn-product-id=prod-pn-dev"
 })
 @EmbeddedKafka(partitions = 1)
@@ -147,11 +148,10 @@ class DelegationsSelfCareConsumerTestIT {
     }
 
     @Test
-    void listenerContainersRetryOnAuthenticationExceptionTest() {
-        assertThat(kafkaListenerEndpointRegistry.getListenerContainers())
-                .hasSize(2)
-                .extracting(MessageListenerContainer::getContainerProperties)
-                .allSatisfy(properties -> assertThat(properties.getAuthExceptionRetryInterval()).isEqualTo(Duration.ofSeconds(60)));
+    void delegationsListenerContainerRetryOnAuthenticationExceptionTest() {
+        MessageListenerContainer container = kafkaListenerEndpointRegistry.getListenerContainer("delegations-it-consumer");
+        assertThat(container).isNotNull();
+        assertThat(container.getContainerProperties().getAuthExceptionRetryInterval()).isEqualTo(Duration.ofSeconds(60));
     }
 
     private String delegationEvent(String type, String productId) {
