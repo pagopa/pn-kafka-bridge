@@ -38,9 +38,14 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
         log.info("Built malformed events: {}", events);
         buildMalformedBatches(events).parallelStream()
                 .forEach(batch -> {
-                    log.debug("Sending messages to SQS: {}", batch);
-                    errorEvent.push(batch);
-                    log.info("Message sent to SQS: {}", batch);
+                    try {
+                        log.debug("Sending messages to SQS: {}", batch);
+                        errorEvent.push(batch);
+                        log.info("Message sent to SQS: {}", batch);
+                    } catch (Exception ex) {
+                        log.error("Error, unable to send message to SQS queue : ", ex);
+                        throw ex;
+                    }
                 });
     }
 
