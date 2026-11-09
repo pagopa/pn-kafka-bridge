@@ -8,10 +8,11 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Data
 public class PaymentInfo {
-    private Instant dueDate;
+    private LocalDate dueDate;
     @Length(max = 1000)
     @Pattern(regexp = "[0-9]+")
     @Min(0)

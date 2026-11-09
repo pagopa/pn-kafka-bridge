@@ -2,10 +2,10 @@ package it.pagopa.pn.kafka.bridge.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnErrorEvent;
 import it.pagopa.pn.api.dto.events.PnNoticePaymentEvent;
-import it.pagopa.pn.api.dto.events.StandardEventHeader;
 import it.pagopa.pn.kafka.bridge.mapper.PagoPaPaymentMapper;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import lombok.CustomLog;
@@ -91,14 +91,13 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
         try {
             int payloadBytes = objectMapper.writerFor(PnErrorEvent.Payload.class)
                     .writeValueAsString(event.getPayload()).getBytes(StandardCharsets.UTF_8).length;
-            StandardEventHeader header = event.getHeader();
+            GenericEventHeader header = event.getHeader();
             // AbstractSqsMomProducer sends the payload as JSON and these five String attributes.
             return payloadBytes
                     + attributeSize("eventId", header.getEventId())
                     + attributeSize("eventType", header.getEventType())
                     + attributeSize("createdAt", header.getCreatedAt().toString())
-                    + attributeSize("publisher", header.getPublisher())
-                    + attributeSize("iun", header.getIun());
+                    + attributeSize("publisher", header.getPublisher());
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Cannot serialize malformed event for SQS size validation", e);
         }
