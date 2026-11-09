@@ -1,6 +1,8 @@
 package it.pagopa.pn.kafka.bridge.util;
 
 import it.pagopa.pn.kafka.bridge.middleware.kafka.consumer.OnboardingSelfCareConsumer;
+import it.pagopa.pn.kafka.bridge.middleware.kafka.consumer.PagoPaPaymentConsumer;
+import it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs.KafkaBridgePaymentsConsumer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsOnboardingProducer;
 import it.pagopa.pn.kafka.bridge.model.OnboardingSelfCareMessage;
 import it.pagopa.pn.kafka.bridge.service.OnboardingService;
@@ -11,11 +13,19 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "pn.kafka-bridge.payment-events.concurrency=1"
+})
 class ValidatorUtilTest {
 
     @MockitoBean
     private OnboardingSelfCareConsumer consumer;
+
+    @MockitoBean
+    private PagoPaPaymentConsumer pagoPaPaymentConsumer;
+
+    @MockitoBean
+    private KafkaBridgePaymentsConsumer kafkaBridgePaymentsConsumer;
 
     @MockitoBean
     private OnboardingService onboardingService;
