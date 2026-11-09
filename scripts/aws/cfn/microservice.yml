@@ -354,7 +354,7 @@ Resources:
         ContainerEnvEntry12: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID=${KafkaDelegationsGroupId}'
         ContainerEnvEntry13: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_BOOTSTRAP_SERVERS=${KafkaDelegationsBootstrapServers}'
         ContainerEnvEntry14: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_PROPERTIES_AUTO_COMMIT_INTERVAL_MS=${KafkaBridgeAutoCommitIntervalMillis}'
-        ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_DELEGATIONS_INPUT=${ProjectName}-kafka_bridge_delegations'
+        ContainerEnvEntry15: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_DELEGATIONS_INPUT=${ProjectName}-kafka_bridge_delegations'
         ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_MAX_POLL_RECORDS=${KafkaPaymentMaxPollRecords}'
         ContainerEnvEntry17: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_FETCH_MIN_BYTES=${KafkaPaymentFetchMinBytes}'
         ContainerEnvEntry18: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_FETCH_MAX_WAIT_MS=${KafkaPaymentFetchMaxWaitMs}'
