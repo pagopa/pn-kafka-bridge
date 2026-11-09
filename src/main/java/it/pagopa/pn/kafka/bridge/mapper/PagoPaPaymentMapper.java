@@ -16,7 +16,7 @@ public class PagoPaPaymentMapper {
 
     public List<PnErrorEvent> buildMalformedEvents(List<String> inputMessages) {
         return inputMessages.stream().map(message -> PnErrorEvent.builder()
-                .header(StandardEventHeader.builder()
+                .header(GenericEventHeader.builder()
                         .eventId("MALFORMED_EVENT_" + UUID.randomUUID())
                         .createdAt(Instant.now())
                         .eventType(EventType.ERROR_EVENT.name())
@@ -43,7 +43,7 @@ public class PagoPaPaymentMapper {
         PaymentInfo paymentInfo = message.getPaymentInfo();
 
         return PnNoticePaymentEvent.builder()
-                .header(StandardEventHeader.builder()
+                .header(GenericEventHeader.builder()
                         .eventId("NOTICE_PAYMENT_EVENT_" + UUID.randomUUID())
                         .createdAt(Instant.now())
                         .eventType(EventType.NOTICE_PAYMENT.name())

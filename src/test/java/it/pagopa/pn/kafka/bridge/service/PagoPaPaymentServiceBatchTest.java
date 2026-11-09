@@ -21,6 +21,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.time.Instant;
 import java.util.stream.IntStream;
@@ -63,7 +64,7 @@ class PagoPaPaymentServiceBatchTest {
         message.getDebtorPosition().setNoticeNumber("notice");
         message.getCreditor().setIdPA("12345678901");
         message.getCreditor().setCompanyName("creditor");
-        message.getPaymentInfo().setDueDate(Instant.parse("2026-10-21T00:00:00Z"));
+        message.getPaymentInfo().setDueDate(LocalDate.parse("2026-10-21"));
         message.getPaymentInfo().setTotalNotice("2");
         message.getPaymentInfo().setPaymentChannel("channel");
         message.getPaymentInfo().setAmount(1000);

@@ -31,6 +31,7 @@ import software.amazon.awssdk.services.sqs.model.*;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -107,7 +108,7 @@ class PagoPaPaymentFlowTest {
         assertEquals("12345678901", first.getCreditorTaxId());
         assertEquals("Test creditor", first.getCreditorCompanyName());
         assertEquals(PAYMENT_TIMESTAMP, first.getPaymentDateTime());
-        assertEquals(Instant.parse("2026-10-21T00:00:00Z"), first.getDueDate());
+        assertEquals(LocalDate.parse("2026-10-21"), first.getDueDate());
         assertEquals(Integer.valueOf(2), first.getTotalNotice());
         assertEquals("PSP", first.getPaymentSourceChannel());
         assertEquals(Integer.valueOf(1000), first.getAmount());

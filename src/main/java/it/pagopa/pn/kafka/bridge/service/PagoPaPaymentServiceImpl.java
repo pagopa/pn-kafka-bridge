@@ -2,10 +2,10 @@ package it.pagopa.pn.kafka.bridge.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.pn.api.dto.events.GenericEventHeader;
 import it.pagopa.pn.api.dto.events.MomProducer;
 import it.pagopa.pn.api.dto.events.PnErrorEvent;
 import it.pagopa.pn.api.dto.events.PnNoticePaymentEvent;
-import it.pagopa.pn.api.dto.events.StandardEventHeader;
 import it.pagopa.pn.kafka.bridge.mapper.PagoPaPaymentMapper;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import lombok.CustomLog;
@@ -35,13 +35,13 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
     @Override
     public void sendMessage(List<String> inputMessages) {
         List<PnErrorEvent> events = mapper.buildMalformedEvents(inputMessages);
-        log.info("Built malformed events: {}", events);
+        log.debug("Built malformed events: {}", events);
         buildMalformedBatches(events).parallelStream()
                 .forEach(batch -> {
                     try {
                         log.debug("Sending messages to SQS: {}", batch);
                         errorEvent.push(batch);
-                        log.info("Message sent to SQS: {}", batch);
+                        log.debug("Message sent to SQS: {}", batch);
                     } catch (Exception ex) {
                         log.error("Error, unable to send message to SQS queue : ", ex);
                         throw ex;
@@ -50,7 +50,7 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
     }
 
     List<List<PnErrorEvent>> buildMalformedBatches(List<PnErrorEvent> events) {
-        log.info("Building malformed event batches, total events: {}", events.size());
+        log.debug("Building malformed event batches, total events: {}", events.size());
         List<List<PnErrorEvent>> batches = new ArrayList<>();
         List<PnErrorEvent> batch = new ArrayList<>();
         int batchBytes = 0;
@@ -65,7 +65,7 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
                 batch = new ArrayList<>();
                 batchBytes = 0;
             }
-            log.info("Adding malformed event to batch: {} bytes, batch size: {}, batch bytes: {}",
+            log.debug("Adding malformed event to batch: {} bytes, batch size: {}, batch bytes: {}",
                     eventBytes, batch.size() + 1, batchBytes + eventBytes);
             batch.add(event);
             batchBytes += eventBytes;
@@ -74,7 +74,7 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
             batches.add(batch);
         }
 
-        log.info("Built {} malformed event batches, total events: {}", batches.size(), events.size());
+        log.debug("Built {} malformed event batches, total events: {}", batches.size(), events.size());
         return batches;
     }
 
@@ -87,18 +87,17 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
     }
 
     private int malformedEventSize(PnErrorEvent event) {
-        log.info("Calculating size of malformed event: {}", event);
+        log.debug("Calculating size of malformed event: {}", event);
         try {
             int payloadBytes = objectMapper.writerFor(PnErrorEvent.Payload.class)
                     .writeValueAsString(event.getPayload()).getBytes(StandardCharsets.UTF_8).length;
-            StandardEventHeader header = event.getHeader();
+            GenericEventHeader header = event.getHeader();
             // AbstractSqsMomProducer sends the payload as JSON and these five String attributes.
             return payloadBytes
                     + attributeSize("eventId", header.getEventId())
                     + attributeSize("eventType", header.getEventType())
                     + attributeSize("createdAt", header.getCreatedAt().toString())
-                    + attributeSize("publisher", header.getPublisher())
-                    + attributeSize("iun", header.getIun());
+                    + attributeSize("publisher", header.getPublisher());
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Cannot serialize malformed event for SQS size validation", e);
         }
@@ -119,7 +118,7 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
                 .forEach(batch -> {
                     log.debug("Sending messages to SQS: {}", batch);
                     noticePaymentEvent.push(batch);
-                    log.info("Message sent to SQS: {}", batch);
+                    log.debug("Message sent to SQS: {}", batch);
                 });
     }
 
