@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class PagoPaPaymentMapper {
@@ -16,6 +17,7 @@ public class PagoPaPaymentMapper {
     public List<PnErrorEvent> buildMalformedEvents(List<String> inputMessages) {
         return inputMessages.stream().map(message -> PnErrorEvent.builder()
                 .header(StandardEventHeader.builder()
+                        .eventId("MALFORMED_EVENT_" + UUID.randomUUID())
                         .createdAt(Instant.now())
                         .eventType(EventType.ERROR_EVENT.name())
                         .publisher(EventPublisher.KAFKA_BRIDGE.name())
@@ -42,6 +44,7 @@ public class PagoPaPaymentMapper {
 
         return PnNoticePaymentEvent.builder()
                 .header(StandardEventHeader.builder()
+                        .eventId("NOTICE_PAYMENT_EVENT_" + UUID.randomUUID())
                         .createdAt(Instant.now())
                         .eventType(EventType.NOTICE_PAYMENT.name())
                         .publisher(EventPublisher.KAFKA_BRIDGE.name())
