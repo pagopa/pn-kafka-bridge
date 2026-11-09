@@ -31,7 +31,7 @@ The bridge also consumes the SelfCare delegations topic (`sc-delegations`, with 
 * Validation: only the fields required by the feature are checked: `from`, `to`, `delegationId`, `status`, `institutionFromName` and `fromTaxCode` must be present, `status` must be `ACTIVE` or `DELETED`, `createdAt`, `updatedAt` and `closedAt`, when present, must be valid dates with offset. The other fields are not validated. An invalid event is logged as error and not published.
 * Message header: `iun` is the `delegationId`, `eventId` is `<delegationId>_<sourceEventId>`, `eventType` is `PT_DELEGATION_CHANGED`, `publisher` is `KAFKA_BRIDGE`.
 
-Kafka configuration is per flow: each flow has its own `KafkaClusterProperties` (`pn.kafka-bridge.onboarding-contracts` and `pn.kafka-bridge.delegations`) with bootstrap servers, group id, topic and the Kafka consumer properties under `properties.*` (SASL credential, deserializers, commit and poll settings). \
+Kafka configuration is per flow: each flow has its own `KafkaClusterProperties` (`pn.kafka-bridge.onboarding-contracts` and `pn.kafka-bridge.delegations`) with bootstrap servers, group id, topic, SASL credential (`sasl-jaas-password`) and the Kafka consumer properties under `properties.*` (deserializers, commit and poll settings). \
 The group id is used as `id` of the `@KafkaListener`, so it is also the consumer group: the two flows must have different values, otherwise the application does not start.
 
 | Property | Environment variable | Flow |
@@ -44,7 +44,7 @@ The group id is used as `id` of the `@KafkaListener`, so it is also the consumer
 | `pn.kafka-bridge.delegations.group-id` | `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID` | delegations |
 | `pn.kafka-bridge.delegations.bootstrap-servers` | `PN_KAFKA_BRIDGE_DELEGATIONS_BOOTSTRAP_SERVERS` | delegations |
 | `pn.kafka-bridge.delegations.properties.auto.commit.interval.ms` | `PN_KAFKA_BRIDGE_DELEGATIONS_PROPERTIES_AUTO_COMMIT_INTERVAL_MS` | delegations |
-| `pn.kafka-bridge.delegations.properties.sasl.jaas.config` | `KAFKA_DELEGATIONS_SASL_JAAS_PASSWORD` | delegations |
+| `pn.kafka-bridge.delegations.sasl-jaas-password` | `KAFKA_DELEGATIONS_SASL_JAAS_PASSWORD` | delegations |
 | `pn.kafka-bridge.delegations.auth-exception-retry-interval` | | delegations (default `60s`) |
 | `pn.kafka-bridge.sqs-topics.delegations-input` | `PN_KAFKA_BRIDGE_SQS_TOPICS_DELEGATIONS_INPUT` | delegations |
 
