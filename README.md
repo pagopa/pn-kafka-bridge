@@ -39,6 +39,7 @@ The group id is used as `id` of the `@KafkaListener`, so it is also the consumer
 | `pn.kafka-bridge.onboarding-contracts.topic-name` | `PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_TOPIC_NAME` | onboarding |
 | `pn.kafka-bridge.onboarding-contracts.group-id` | `PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_GROUP_ID` | onboarding |
 | `pn.kafka-bridge.onboarding-contracts.bootstrap-servers` | `PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_BOOTSTRAP_SERVERS` | onboarding |
+| `pn.kafka-bridge.onboarding-contracts.auth-exception-retry-interval` | | onboarding (default `60s`) |
 | `pn.kafka-bridge.sqs-topics.onboarding-input` | `PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT` | onboarding |
 | `pn.kafka-bridge.delegations.topic-name` | `PN_KAFKA_BRIDGE_DELEGATIONS_TOPIC_NAME` | delegations |
 | `pn.kafka-bridge.delegations.group-id` | `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID` | delegations |

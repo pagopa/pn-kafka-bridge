@@ -3,7 +3,6 @@ package it.pagopa.pn.kafka.bridge.config;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +13,6 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 
-import java.time.Duration;
 import java.util.Map;
 
 @Configuration
@@ -31,15 +29,15 @@ public class KafkaConsumersConfig {
     public ConcurrentKafkaListenerContainerFactory<String, Object> onboardingContractsKafkaListenerContainerFactory(PnKafkaBridgeConfig p) {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, Object>();
         factory.setConsumerFactory(consumerFactory(p.getOnboardingContracts()));
+        factory.getContainerProperties().setAuthExceptionRetryInterval(p.getOnboardingContracts().getAuthExceptionRetryInterval());
         return factory;
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> delegationsKafkaListenerContainerFactory(PnKafkaBridgeConfig p,
-            @Value("${pn.kafka-bridge.delegations.auth-exception-retry-interval:60s}") Duration authExceptionRetryInterval) {
+    public ConcurrentKafkaListenerContainerFactory<String, Object> delegationsKafkaListenerContainerFactory(PnKafkaBridgeConfig p) {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, Object>();
         factory.setConsumerFactory(consumerFactory(p.getDelegations()));
-        factory.getContainerProperties().setAuthExceptionRetryInterval(authExceptionRetryInterval);
+        factory.getContainerProperties().setAuthExceptionRetryInterval(p.getDelegations().getAuthExceptionRetryInterval());
         return factory;
     }
 

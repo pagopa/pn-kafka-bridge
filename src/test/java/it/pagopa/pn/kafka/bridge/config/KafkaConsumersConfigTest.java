@@ -27,12 +27,13 @@ class KafkaConsumersConfigTest {
     void delegationsKafkaListenerContainerFactoryUsesDelegationsPropertiesTest() {
         PnKafkaBridgeConfig bridgeConfig = new PnKafkaBridgeConfig();
         bridgeConfig.setDelegations(cluster("delegations-broker.example.com:9093", "delegations-secret"));
+        bridgeConfig.getDelegations().setAuthExceptionRetryInterval(Duration.ofSeconds(60));
         bridgeConfig.getDelegations().setProperties(Map.of(
                 "security.protocol", "SASL_SSL",
                 "auto.offset.reset", "earliest"));
 
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
-                config.delegationsKafkaListenerContainerFactory(bridgeConfig, Duration.ofSeconds(60));
+                config.delegationsKafkaListenerContainerFactory(bridgeConfig);
 
         Map<String, Object> consumerProperties = factory.getConsumerFactory().getConfigurationProperties();
         assertThat(consumerProperties)
@@ -45,6 +46,34 @@ class KafkaConsumersConfigTest {
     }
 
     @Test
+    void onboardingContractsKafkaListenerContainerFactoryRetriesOnAuthenticationExceptionTest() {
+        PnKafkaBridgeConfig bridgeConfig = new PnKafkaBridgeConfig();
+        bridgeConfig.setOnboardingContracts(cluster("onboarding-broker.example.com:9093", "onboarding-secret"));
+        bridgeConfig.getOnboardingContracts().setAuthExceptionRetryInterval(Duration.ofSeconds(60));
+
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
+                config.onboardingContractsKafkaListenerContainerFactory(bridgeConfig);
+
+        assertThat(factory.getContainerProperties().getAuthExceptionRetryInterval()).isEqualTo(Duration.ofSeconds(60));
+    }
+
+    @Test
+    void authExceptionRetryIntervalDefaultTest() throws IOException {
+        StandardEnvironment environment = new StandardEnvironment();
+        environment.getPropertySources().addLast(new ResourcePropertySource("classpath:application.properties"));
+
+        PnKafkaBridgeConfig.KafkaClusterProperties onboarding = Binder.get(environment)
+                .bind("pn.kafka-bridge.onboarding-contracts", PnKafkaBridgeConfig.KafkaClusterProperties.class)
+                .get();
+        PnKafkaBridgeConfig.KafkaClusterProperties delegations = Binder.get(environment)
+                .bind("pn.kafka-bridge.delegations", PnKafkaBridgeConfig.KafkaClusterProperties.class)
+                .get();
+
+        assertThat(onboarding.getAuthExceptionRetryInterval()).isEqualTo(Duration.ofSeconds(60));
+        assertThat(delegations.getAuthExceptionRetryInterval()).isEqualTo(Duration.ofSeconds(60));
+    }
+
+    @Test
     void delegationsAndOnboardingContractsFactoriesAreIndependentTest() {
         PnKafkaBridgeConfig bridgeConfig = new PnKafkaBridgeConfig();
         bridgeConfig.setOnboardingContracts(cluster("onboarding-broker.example.com:9093", "onboarding-secret"));
@@ -52,7 +81,7 @@ class KafkaConsumersConfigTest {
 
         Map<String, Object> onboardingProperties = config.onboardingContractsKafkaListenerContainerFactory(bridgeConfig)
                 .getConsumerFactory().getConfigurationProperties();
-        Map<String, Object> delegationsProperties = config.delegationsKafkaListenerContainerFactory(bridgeConfig, Duration.ofSeconds(60))
+        Map<String, Object> delegationsProperties = config.delegationsKafkaListenerContainerFactory(bridgeConfig)
                 .getConsumerFactory().getConfigurationProperties();
 
         assertThat(onboardingProperties)
