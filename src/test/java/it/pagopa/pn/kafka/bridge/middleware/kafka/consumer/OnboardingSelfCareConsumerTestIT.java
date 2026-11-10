@@ -25,6 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 @SpringBootTest(properties = {
@@ -44,6 +45,9 @@ class OnboardingSelfCareConsumerTestIT {
 
     @MockitoSpyBean
     private OnboardingSelfCareConsumer consumer;
+
+    @MockitoBean
+    private DelegationsSelfCareConsumer delegationsSelfCareConsumer;
 
     @MockitoBean
     private PagoPaPaymentConsumer pagoPaPaymentConsumer;
@@ -71,6 +75,12 @@ class OnboardingSelfCareConsumerTestIT {
         ContainerTestUtils.waitForAssignment(listenerRegistry.getListenerContainer("consumer-test"), 1);
     }
 
+
+    @Test
+    void onboardingListenerContainerRetryOnAuthenticationExceptionTest() {
+        assertThat(listenerRegistry.getListenerContainer("consumer-test").getContainerProperties().getAuthExceptionRetryInterval())
+                .isEqualTo(Duration.ofSeconds(60));
+    }
 
     @Test
     void listenOKTest() throws ExecutionException, InterruptedException, JsonProcessingException {

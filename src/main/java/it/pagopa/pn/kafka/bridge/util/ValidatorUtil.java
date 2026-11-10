@@ -1,5 +1,6 @@
 package it.pagopa.pn.kafka.bridge.util;
 
+import it.pagopa.pn.kafka.bridge.model.DelegationSelfCareMessage;
 import it.pagopa.pn.kafka.bridge.model.OnboardingSelfCareMessage;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import jakarta.validation.*;
-
 import java.util.Set;
 
 @Component
@@ -27,6 +27,15 @@ public class ValidatorUtil {
         Set<ConstraintViolation<OnboardingSelfCareMessage>> validateResults = validator.validate(inputMessage);
         if(! CollectionUtils.isEmpty(validateResults)) {
             log.error(PAYLOAD_RECEIVED_IS_NOT_VALID, inputMessage.getInternalIstitutionID(), validateResults);
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isValidDelegationSelfCareMessage(DelegationSelfCareMessage inputMessage) {
+        Set<ConstraintViolation<DelegationSelfCareMessage>> validateResults = validator.validate(inputMessage);
+        if(! CollectionUtils.isEmpty(validateResults)) {
+            log.error(PAYLOAD_RECEIVED_IS_NOT_VALID, inputMessage.getDelegationId(), validateResults);
             return false;
         }
         return true;

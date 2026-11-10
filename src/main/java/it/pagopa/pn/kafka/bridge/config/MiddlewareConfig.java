@@ -1,6 +1,7 @@
 package it.pagopa.pn.kafka.bridge.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsDelegationsProducer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsErrorEventProducer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsOnboardingProducer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.producer.sqs.SqsPaymentsToVerifyProducer;
@@ -14,6 +15,11 @@ public class MiddlewareConfig {
     @Bean
     SqsOnboardingProducer sqsNotificationPaidProducer(SqsClient sqs, ObjectMapper objMapper, PnKafkaBridgeConfig cfg) {
         return new SqsOnboardingProducer( sqs, cfg.getSqsTopics().getOnboardingInput(), objMapper);
+    }
+
+    @Bean
+    SqsDelegationsProducer sqsDelegationsProducer(SqsClient sqs, ObjectMapper objMapper, PnKafkaBridgeConfig cfg) {
+        return new SqsDelegationsProducer( sqs, cfg.getSqsTopics().getDelegationsInput(), objMapper);
     }
 
     @Bean

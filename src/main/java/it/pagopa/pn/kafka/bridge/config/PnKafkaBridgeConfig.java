@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,11 +29,14 @@ public class PnKafkaBridgeConfig {
 
     private KafkaClusterProperties onboardingContracts;
 
+    private KafkaClusterProperties delegations;
+
     private KafkaClusterProperties paymentEvents;
 
     @Data
     public static class SqsTopics {
         private String onboardingInput;
+        private String delegationsInput;
         private String errorEventInput;
         private String kafkaBridgePayments;
         private String paymentsToVerify;
@@ -45,6 +49,7 @@ public class PnKafkaBridgeConfig {
         private String topicName;
         private int concurrency = 1;
         private String saslJaasPassword;
+        private Duration authExceptionRetryInterval;
         private Map<String, String> properties = new HashMap<>();
     }
 
