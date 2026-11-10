@@ -2,6 +2,7 @@ package it.pagopa.pn.kafka.bridge.util;
 
 import de.neuland.assertj.logging.ExpectedLogging;
 import de.neuland.assertj.logging.ExpectedLoggingAssertions;
+import it.pagopa.pn.kafka.bridge.middleware.kafka.consumer.DelegationsSelfCareConsumer;
 import it.pagopa.pn.kafka.bridge.middleware.kafka.consumer.OnboardingSelfCareConsumer;
 import it.pagopa.pn.kafka.bridge.middleware.kafka.consumer.PagoPaPaymentConsumer;
 import it.pagopa.pn.kafka.bridge.middleware.queue.consumer.sqs.KafkaBridgePaymentsConsumer;
@@ -31,6 +32,9 @@ class ValidatorUtilTest {
 
     @MockitoBean
     private OnboardingSelfCareConsumer consumer;
+
+    @MockitoBean
+    private DelegationsSelfCareConsumer delegationsSelfCareConsumer;
 
     @MockitoBean
     private PagoPaPaymentConsumer pagoPaPaymentConsumer;

@@ -10,8 +10,14 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.listener.ListenerExecutionFailedException;
+import org.springframework.test.util.ReflectionTestUtils;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.services.sqs.model.SqsException;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.time.Duration;
 import java.util.Map;
 
@@ -55,6 +61,38 @@ class KafkaConsumersConfigTest {
                 config.onboardingContractsKafkaListenerContainerFactory(bridgeConfig);
 
         assertThat(factory.getContainerProperties().getAuthExceptionRetryInterval()).isEqualTo(Duration.ofSeconds(60));
+    }
+
+    @Test
+    void delegationsFactoryUsesDefaultErrorHandlerTest() {
+        PnKafkaBridgeConfig bridgeConfig = new PnKafkaBridgeConfig();
+        bridgeConfig.setDelegations(cluster("delegations-broker.example.com:9093", "delegations-secret"));
+
+        assertThat(ReflectionTestUtils.getField(config.delegationsKafkaListenerContainerFactory(bridgeConfig), "commonErrorHandler"))
+                .isInstanceOf(DefaultErrorHandler.class);
+    }
+
+    @Test
+    void sqsConnectionErrorIsDetectedThroughCausesTest() {
+        Exception ex = new ListenerExecutionFailedException("Listener method threw exception",
+                SdkClientException.builder().message("Unable to execute HTTP request").cause(new ConnectException()).build());
+
+        assertThat(KafkaConsumersConfig.isSqsConnectionError(ex)).isTrue();
+    }
+
+    @Test
+    void sqsServiceErrorIsNotConnectionErrorTest() {
+        Exception ex = new ListenerExecutionFailedException("Listener method threw exception",
+                SqsException.builder().statusCode(503).message("Service Unavailable").build());
+
+        assertThat(KafkaConsumersConfig.isSqsConnectionError(ex)).isFalse();
+    }
+
+    @Test
+    void genericErrorIsNotConnectionErrorTest() {
+        Exception ex = new ListenerExecutionFailedException("Listener method threw exception", new NullPointerException());
+
+        assertThat(KafkaConsumersConfig.isSqsConnectionError(ex)).isFalse();
     }
 
     @Test
