@@ -33,6 +33,7 @@ Parameters:
   KafkaDelegationsGroupId:
     Type: String
     Description: 'Kafka group id for delegations'
+    Default: ''
 
   KafkaDelegationsBootstrapServers:
     Type: String
@@ -349,7 +350,7 @@ Resources:
         ContainerEnvEntry7: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ONBOARDING_INPUT=${KafkaBridgeOnboardingQueueName}'
         ContainerEnvEntry8: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry9: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
-        ContainerEnvEntry10: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_PROPERTIES_AUTO_COMMIT_INTERVAL=${KafkaBridgeAutoCommitIntervalMillis}'
+        ContainerEnvEntry10: !Sub 'PN_KAFKA_BRIDGE_ONBOARDING_CONTRACTS_PROPERTIES_AUTO_COMMIT_INTERVAL_MS=${KafkaBridgeAutoCommitIntervalMillis}'
         ContainerEnvEntry11: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_TOPIC_NAME=${KafkaDelegationsTopicName}'
         ContainerEnvEntry12: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID=${KafkaDelegationsGroupId}'
         ContainerEnvEntry13: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_BOOTSTRAP_SERVERS=${KafkaDelegationsBootstrapServers}'

@@ -49,7 +49,7 @@ The group id is used as `id` of the `@KafkaListener`, so it is also the consumer
 | `pn.kafka-bridge.sqs-topics.delegations-input` | `PN_KAFKA_BRIDGE_SQS_TOPICS_DELEGATIONS_INPUT` | delegations |
 
 Before the deploy, SelfCare must enable the PN key and the consumer group on the topic, the key `KafkaDelegationsSaslJaasConfig` must exist in the secret `pn-KafkaBridge-Secrets` and the queue `<ProjectName>-kafka_bridge_delegations` must exist. \
-The parameter `KafkaDelegationsGroupId` (environment variable `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID`) has no default and must be set to the consumer group authorized by SelfCare, otherwise the stack deploy fails. \
+The parameter `KafkaDelegationsGroupId` (environment variable `PN_KAFKA_BRIDGE_DELEGATIONS_GROUP_ID`) must be set to the consumer group authorized by SelfCare. \
 The parameter `KafkaDelegationsBootstrapServers` (environment variable `PN_KAFKA_BRIDGE_DELEGATIONS_BOOTSTRAP_SERVERS`) must be set to the Event Hub namespace of the delegations topic, which must allow the IPs of the environment.
 
 ### Troubleshooting
