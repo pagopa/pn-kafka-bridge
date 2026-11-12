@@ -75,7 +75,7 @@ class PagoPaPaymentServiceBatchTest {
         service.sendMessage(List.of(message), ingestionTimestamp);
 
         verify(noticePaymentEvent).push(paymentBatches.capture());
-        PnNoticePaymentEvent event = paymentBatches.getValue().get(0);
+        PnNoticePaymentEvent event = paymentBatches.getValue().getFirst();
         assertEquals(EventType.NOTICE_PAYMENT.name(), event.getHeader().getEventType());
         assertEquals(EventPublisher.KAFKA_BRIDGE.name(), event.getHeader().getPublisher());
         assertEquals(PnNoticePaymentEvent.Payload.builder()
@@ -85,6 +85,7 @@ class PagoPaPaymentServiceBatchTest {
                 .dueDate(message.getPaymentInfo().getDueDate()).totalNotice(2)
                 .paymentSourceChannel("channel").amount(1000).fee("50").paymentDateTime(Instant.parse("2026-10-20T08:01:00Z"))
                 .pagopaPublishedTimestamp(message.getPagopaPublishedTimestamp())
+                .pagopaPersistedTimestamp(message.getTimestamp())
                 .sendIngestionTimestamp(ingestionTimestamp).build(), event.getPayload());
         verifyNoInteractions(errorEvent);
     }
@@ -95,7 +96,7 @@ class PagoPaPaymentServiceBatchTest {
 
         verify(noticePaymentEvent).push(paymentBatches.capture());
         assertEquals(PnNoticePaymentEvent.Payload.builder()
-                .sendIngestionTimestamp(Instant.EPOCH).build(), paymentBatches.getValue().get(0).getPayload());
+                .sendIngestionTimestamp(Instant.EPOCH).build(), paymentBatches.getValue().getFirst().getPayload());
     }
 
     @Test
@@ -128,7 +129,7 @@ class PagoPaPaymentServiceBatchTest {
 
         verify(errorEvent, times((count + 9) / 10)).push(batches.capture());
         List<List<PnErrorEvent>> sentBatches = batches.getAllValues().stream()
-                .sorted(comparingInt(batch -> messages.indexOf(batch.get(0).getPayload().getOriginalMessage())))
+                .sorted(comparingInt(batch -> messages.indexOf(batch.getFirst().getPayload().getOriginalMessage())))
                 .toList();
         assertEquals(IntStream.iterate(0, start -> start < count, start -> start + 10)
                         .map(start -> Math.min(10, count - start)).boxed().toList(),
