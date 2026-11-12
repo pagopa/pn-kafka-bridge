@@ -9,25 +9,23 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentEventAgeMetricPublisherTest {
+    private static final int EMPTY_WINDOWS_THRESHOLD = 3;
 
     @Mock
     private KafkaPaymentEventAgeCache cache;
 
-    @InjectMocks
     private PaymentEventAgeMetricPublisher publisher;
 
     private Logger logger;
@@ -35,13 +33,11 @@ class PaymentEventAgeMetricPublisherTest {
 
     @BeforeEach
     void setUp() {
-        logger = (Logger) LoggerFactory.getLogger(
-                PaymentEventAgeMetricPublisher.class
-        );
 
+        publisher = new PaymentEventAgeMetricPublisher(cache, EMPTY_WINDOWS_THRESHOLD);
+        logger = (Logger) LoggerFactory.getLogger(PaymentEventAgeMetricPublisher.class);
         logAppender = new ListAppender<>();
         logAppender.start();
-
         logger.addAppender(logAppender);
     }
 
@@ -52,86 +48,107 @@ class PaymentEventAgeMetricPublisherTest {
     }
 
     @Test
-    void shouldNotPublishMetricWhenCacheIsEmpty() {
+    void shouldPublishOnlyAgeMetricWithDefaultValueWhenWindowIsEmptyBelowThreshold() {
         when(cache.drain()).thenReturn(Map.of());
 
-        publisher.publishMetricsAndClearCache();
+        publisher.drainCacheAndPublishMetrics();
 
-        Assertions.assertTrue(logAppender.list.isEmpty());
+        assertEquals(
+                List.of("No events received in the last window. Consecutive empty windows: 1"),
+                getLoggedMessages()
+        );
         verify(cache).drain();
+    }
+
+    @Test
+    void shouldPublishConsecutiveEmptyWindowsMetricWhenThresholdIsReached() {
+        when(cache.drain()).thenReturn(Map.of());
+
+        for (int i = 0; i < EMPTY_WINDOWS_THRESHOLD; i++) {
+            publisher.drainCacheAndPublishMetrics();
+        }
+
+        List<String> messages = getLoggedMessages();
+
+        // 3 metriche age (una per finestra) + 1 metrica contatore (solo alla terza)
+        assertEquals(EMPTY_WINDOWS_THRESHOLD + 1, messages.size());
+        assertEquals(
+                "No events received in the last window. Consecutive empty windows: 3",
+                messages.get(EMPTY_WINDOWS_THRESHOLD - 1)
+        );
+        assertEquals(
+                "No payment events consumed in the last window (consecutive empty windows: 3, threshold: 3)",
+                messages.get(EMPTY_WINDOWS_THRESHOLD)
+        );
+        verify(cache, times(EMPTY_WINDOWS_THRESHOLD)).drain();
+    }
+
+    @Test
+    void shouldKeepPublishingConsecutiveEmptyWindowsMetricAfterThresholdIsExceeded() {
+        when(cache.drain()).thenReturn(Map.of());
+
+        for (int i = 0; i < EMPTY_WINDOWS_THRESHOLD + 1; i++) {
+            publisher.drainCacheAndPublishMetrics();
+        }
+
+        List<String> messages = getLoggedMessages();
+
+        // 4 metriche age + 2 metriche contatore (terza e quarta finestra)
+        assertEquals(6, messages.size());
+        assertEquals(
+                "No payment events consumed in the last window (consecutive empty windows: 4, threshold: 3)",
+                messages.getLast()
+        );
     }
 
     @Test
     void shouldPublishMetricWithMaximumAge() {
         when(cache.drain()).thenReturn(Map.of(
                 0, 3000L,
-                1, 12000L,
+                1, 12500L,
                 2, 7000L
         ));
 
-        publisher.publishMetricsAndClearCache();
+        publisher.drainCacheAndPublishMetrics();
 
-        ILoggingEvent event = getMetricEvent();
-
-        assertEquals(Level.INFO, event.getLevel());
+        // 12500 ms viene troncato a 12 s
         assertEquals(
-                "Max age in kafka payment events recorded is 12s for partition=1",
-                event.getFormattedMessage()
+                List.of("Max age in kafka payment events is 12s for partition=1"),
+                getLoggedMessages()
         );
-
         verify(cache).drain();
     }
 
     @Test
-    void shouldConvertMillisecondsToSeconds() {
-        when(cache.drain()).thenReturn(Map.of(5, 12500L));
-
-        publisher.publishMetricsAndClearCache();
-
-        ILoggingEvent event = getMetricEvent();
-
-        assertEquals(
-                "Max age in kafka payment events recorded is 12s for partition=5",
-                event.getFormattedMessage()
+    void shouldResetConsecutiveEmptyWindowsWhenEventsAreReceived() {
+        when(cache.drain()).thenReturn(
+                Map.of(),               // vuota (1)
+                Map.of(),               // vuota (2)
+                Map.of(0, 5000L),       // eventi: reset del contatore
+                Map.of(),               // vuota (1)
+                Map.of()                // vuota (2)
         );
-    }
 
-    @Test
-    void shouldLogFatalWhenMoreThan1000Partitions() {
-        Map<Integer, Long> drained = new HashMap<>();
-
-        for (int i = 0; i < 1001; i++) {
-            drained.put(i, (long) i * 1000);
+        for (int i = 0; i < 5; i++) {
+            publisher.drainCacheAndPublishMetrics();
         }
 
-        when(cache.drain()).thenReturn(drained);
+        List<String> messages = getLoggedMessages();
 
-        publisher.publishMetricsAndClearCache();
-
-        Assertions.assertTrue(logAppender.list.stream().anyMatch(event ->
-                event.getLevel() == Level.ERROR
-                        && event.getFormattedMessage().contains(
-                        "Too many partitions in the cache"
-                )
-        ));
-
-        Assertions.assertTrue(logAppender.list.stream().anyMatch(event ->
-                event.getLevel() == Level.INFO
-                        && event.getFormattedMessage()
-                        .contains("Max age in kafka payment events")
-        ));
-
-        assertEquals(2, logAppender.list.size());
-
-        verify(cache).drain();
+        // Senza reset il contatore avrebbe raggiunto la soglia alla quinta finestra
+        Assertions.assertTrue(messages.stream().noneMatch(m -> m.contains("threshold:")));
+        assertEquals(5, messages.size());
+        assertEquals(
+                "No events received in the last window. Consecutive empty windows: 2",
+                messages.get(4)
+        );
+        verify(cache, times(5)).drain();
     }
 
-    private ILoggingEvent getMetricEvent() {
+    private List<String> getLoggedMessages() {
+        logAppender.list.forEach(event -> assertEquals(Level.INFO, event.getLevel()));
         return logAppender.list.stream()
-                .filter(event -> event.getLevel() == Level.INFO)
-                .findFirst()
-                .orElseThrow(() ->
-                        new AssertionError("Metric log not found")
-                );
+                .map(ILoggingEvent::getFormattedMessage)
+                .toList();
     }
 }

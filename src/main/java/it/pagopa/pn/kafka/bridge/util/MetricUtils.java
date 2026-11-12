@@ -17,14 +17,16 @@ public final class MetricUtils {
     @Getter
     @RequiredArgsConstructor
     public enum MetricName {
-        PAYMENT_EVENT_AGE("payment_event_age");
+        PAYMENT_EVENT_AGE("payment_event_age"),
+        PAYMENT_EVENT_CONSECUTIVE_EMPTY_WINDOWS("payment_event_consecutive_empty_windows");
         private final String value;
     }
 
     @Getter
     @RequiredArgsConstructor
     public enum MetricUnit {
-        SECONDS("Seconds");
+        SECONDS("Seconds"),
+        COUNT("Count");
         private final String value;
     }
 
@@ -39,7 +41,9 @@ public final class MetricUtils {
         generalMetric.setMetrics(List.of(new Metric(metricName.getValue(), metricValue)));
         generalMetric.setDimensions(dimensions);
         generalMetric.setTimestamp(Instant.now().toEpochMilli());
-        generalMetric.setUnit(unit.getValue());
+        if(unit != null) {
+            generalMetric.setUnit(unit.getValue());
+        }
         return generalMetric;
     }
 }
