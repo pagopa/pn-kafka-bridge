@@ -32,7 +32,7 @@ public class PagoPaPaymentConsumer {
             topics = "${pn.kafka-bridge.payment-events.topic-name}",
             containerFactory = "paymentEventsKafkaListenerContainerFactory")
     public void listen(List<ConsumerRecord<String, String>> records) {
-        log.debug("Records : {}", records);
+        log.debug("Received {} records", records.size());
         Instant startExecutionInstant = Instant.now();
         traceRecordsAge(records, startExecutionInstant);
 
@@ -46,7 +46,7 @@ public class PagoPaPaymentConsumer {
         try {
             long nowMs = startExecutionInstant.toEpochMilli();
             for (ConsumerRecord<String, String> r : records) {
-                log.debug("Received messages from topics: {}, with keys: {}", r.topic(), r.key());
+                log.debug("Received messages from partition: {}, with key: {}", r.partition(), r.key());
                 kafkaPaymentEventAgeCache.recordAge(r.partition(), Math.max(nowMs - r.timestamp(), 0));
             }
         } catch (Exception e) {

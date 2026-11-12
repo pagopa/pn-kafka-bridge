@@ -66,6 +66,7 @@ public class PagoPaPaymentMapper {
                         .fee(paymentInfo.getFee() == null ? null : paymentInfo.getFee().toString())
                         .pagopaPublishedTimestamp(message.getPagopaPublishedTimestamp())
                         .sendIngestionTimestamp(ingestionTimestamp)
+                        .pagopaPersistedTimestamp(message.getTimestamp())
                         .build())
                 .build();
     }
