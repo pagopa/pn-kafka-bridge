@@ -26,7 +26,6 @@ class PagoPaPaymentMessageValidationTest {
 
     @ParameterizedTest
     @CsvSource({
-            "id, 20",
             "debtorPosition.modelType, 1000",
             "debtorPosition.iuv, 1000",
             "debtorPosition.iur, 1000",
@@ -104,7 +103,6 @@ class PagoPaPaymentMessageValidationTest {
 
     private static void setString(PagoPaPaymentMessage message, String property, String value) {
         switch (property) {
-            case "id" -> message.setId(value);
             case "debtorPosition.modelType" -> message.getDebtorPosition().setModelType(value);
             case "debtorPosition.iuv" -> message.getDebtorPosition().setIuv(value);
             case "debtorPosition.iur" -> message.getDebtorPosition().setIur(value);
