@@ -26,15 +26,16 @@ class PagoPaPaymentMessageValidationTest {
 
     @ParameterizedTest
     @CsvSource({
-            "debtorPosition.modelType, 1000",
-            "debtorPosition.iuv, 1000",
-            "debtorPosition.iur, 1000",
-            "debtorPosition.noticeNumber, 1000",
-            "creditor.idPA, 1000",
-            "creditor.companyName, 1000",
-            "paymentInfo.paymentChannel, 1000"
+            "modelType, 1000",
+            "iuv, 1000",
+            "iur, 1000",
+            "noticeNumber, 1000",
+            "idPA, 1000",
+            "companyName, 1000",
+            "paymentChannel, 1000",
+            "touchpoint, 1000"
     })
-    void enforcesStringLengthThroughCascadedValidation(String property, int maxLength) {
+    void enforcesStringLengthForFlatPaymentFields(String property, int maxLength) {
         PagoPaPaymentMessage message = validMessage();
         setString(message, property, "x".repeat(maxLength));
 
@@ -52,7 +53,7 @@ class PagoPaPaymentMessageValidationTest {
     @ValueSource(strings = {"0", "2", "2147483647", "0002"})
     void acceptsOptionalTotalNoticeWithinIntegerRange(String totalNotice) {
         PagoPaPaymentMessage message = validMessage();
-        message.getPaymentInfo().setTotalNotice(totalNotice);
+        message.setTotalNotice(totalNotice);
 
         assertThat(VALIDATOR.validate(message)).isEmpty();
     }
@@ -62,54 +63,49 @@ class PagoPaPaymentMessageValidationTest {
             "-1", "+1", "1.5", "1e2", " 2", "2 "})
     void rejectsMalformedTotalNoticeThroughCascadedValidation(String totalNotice) {
         PagoPaPaymentMessage message = validMessage();
-        message.getPaymentInfo().setTotalNotice(totalNotice);
+        message.setTotalNotice(totalNotice);
 
         assertThat(VALIDATOR.validate(message))
                 .isNotEmpty()
                 .allSatisfy(violation -> assertThat(violation.getPropertyPath().toString())
-                        .isEqualTo("paymentInfo.totalNotice"));
+                        .isEqualTo("totalNotice"));
     }
 
     @Test
     void enforcesTotalNoticeLengthWithoutViolatingNumericConstraints() {
         PagoPaPaymentMessage message = validMessage();
-        message.getPaymentInfo().setTotalNotice("0".repeat(999) + "2");
+        message.setTotalNotice("0".repeat(999) + "2");
 
         assertThat(VALIDATOR.validate(message)).isEmpty();
 
-        message.getPaymentInfo().setTotalNotice("0".repeat(1000) + "2");
+        message.setTotalNotice("0".repeat(1000) + "2");
 
         assertThat(VALIDATOR.validate(message))
                 .singleElement()
                 .satisfies(violation -> assertThat(violation.getPropertyPath().toString())
-                        .isEqualTo("paymentInfo.totalNotice"));
+                        .isEqualTo("totalNotice"));
     }
 
     private static PagoPaPaymentMessage validMessage() {
         PagoPaPaymentMessage message = new PagoPaPaymentMessage();
         message.setId("payment-id");
-        DebtorPosition debtorPosition = new DebtorPosition();
-        debtorPosition.setNoticeNumber("notice");
-        message.setDebtorPosition(debtorPosition);
-        Creditor creditor = new Creditor();
-        creditor.setIdPA("12345678901");
-        message.setCreditor(creditor);
-        PaymentInfo paymentInfo = new PaymentInfo();
-        paymentInfo.setPaymentDateTime(Instant.parse("2026-10-20T08:00:00Z"));
-        paymentInfo.setAmount(1000);
-        message.setPaymentInfo(paymentInfo);
+        message.setNoticeNumber("notice");
+        message.setIdPA("12345678901");
+        message.setPaymentDateTime(Instant.parse("2026-10-20T08:00:00Z"));
+        message.setAmount(1000);
         return message;
     }
 
     private static void setString(PagoPaPaymentMessage message, String property, String value) {
         switch (property) {
-            case "debtorPosition.modelType" -> message.getDebtorPosition().setModelType(value);
-            case "debtorPosition.iuv" -> message.getDebtorPosition().setIuv(value);
-            case "debtorPosition.iur" -> message.getDebtorPosition().setIur(value);
-            case "debtorPosition.noticeNumber" -> message.getDebtorPosition().setNoticeNumber(value);
-            case "creditor.idPA" -> message.getCreditor().setIdPA(value);
-            case "creditor.companyName" -> message.getCreditor().setCompanyName(value);
-            case "paymentInfo.paymentChannel" -> message.getPaymentInfo().setPaymentChannel(value);
+            case "modelType" -> message.setModelType(value);
+            case "iuv" -> message.setIuv(value);
+            case "iur" -> message.setIur(value);
+            case "noticeNumber" -> message.setNoticeNumber(value);
+            case "idPA" -> message.setIdPA(value);
+            case "companyName" -> message.setCompanyName(value);
+            case "paymentChannel" -> message.setPaymentChannel(value);
+            case "touchpoint" -> message.setTouchpoint(value);
             default -> throw new IllegalArgumentException("Unknown payment property: " + property);
         }
     }

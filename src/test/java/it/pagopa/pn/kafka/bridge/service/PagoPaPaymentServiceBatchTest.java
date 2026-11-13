@@ -7,10 +7,7 @@ import it.pagopa.pn.api.dto.events.PnErrorEvent;
 import it.pagopa.pn.api.dto.events.PnNoticePaymentEvent;
 import it.pagopa.pn.api.dto.events.EventPublisher;
 import it.pagopa.pn.api.dto.events.EventType;
-import it.pagopa.pn.kafka.bridge.model.Creditor;
-import it.pagopa.pn.kafka.bridge.model.DebtorPosition;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
-import it.pagopa.pn.kafka.bridge.model.PaymentInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,21 +53,22 @@ class PagoPaPaymentServiceBatchTest {
     void mapsPaymentFieldsAndDistinctTimestamps() {
         PagoPaPaymentMessage message = paymentMessage();
         message.setId("payment-id");
-        message.setTimestamp(Instant.parse("2026-10-20T08:00:00Z"));
+        message.setTimestamp(Instant.parse("2026-10-20T08:00:00Z").toEpochMilli());
         message.setPagopaPublishedTimestamp(Instant.parse("2026-10-20T08:01:00Z"));
         message.setKafkaPartition(7);
-        message.getDebtorPosition().setModelType("1");
-        message.getDebtorPosition().setIuv("iuv");
-        message.getDebtorPosition().setIur("iur");
-        message.getDebtorPosition().setNoticeNumber("notice");
-        message.getCreditor().setIdPA("12345678901");
-        message.getCreditor().setCompanyName("creditor");
-        message.getPaymentInfo().setDueDate(LocalDate.parse("2026-10-21"));
-        message.getPaymentInfo().setTotalNotice("2");
-        message.getPaymentInfo().setPaymentChannel("channel");
-        message.getPaymentInfo().setAmount(1000);
-        message.getPaymentInfo().setFee(50);
-        message.getPaymentInfo().setPaymentDateTime(Instant.parse("2026-10-20T08:01:00Z"));
+        message.setModelType("1");
+        message.setIuv("iuv");
+        message.setIur("iur");
+        message.setNoticeNumber("notice");
+        message.setIdPA("12345678901");
+        message.setCompanyName("creditor");
+        message.setDueDate(LocalDate.parse("2026-10-21"));
+        message.setTotalNotice("2");
+        message.setPaymentChannel("channel");
+        message.setTouchpoint("APP");
+        message.setAmount(100);
+        message.setFee(1);
+        message.setPaymentDateTime(Instant.parse("2026-10-20T08:01:00Z"));
         Instant ingestionTimestamp = Instant.parse("2026-10-20T08:02:00Z");
 
         service.sendMessage(List.of(message), ingestionTimestamp);
@@ -82,11 +80,12 @@ class PagoPaPaymentServiceBatchTest {
         assertEquals(PnNoticePaymentEvent.Payload.builder()
                 .modelType("1").iuv("iuv").iur("iur").noticeCode("notice")
                 .creditorTaxId("12345678901").creditorCompanyName("creditor")
-                .paymentId("payment-id").paymentDateTime(message.getTimestamp())
-                .dueDate(message.getPaymentInfo().getDueDate()).totalNotice(2)
-                .paymentSourceChannel("channel").amount(1000).fee("50").paymentDateTime(Instant.parse("2026-10-20T08:01:00Z"))
+                .paymentId("payment-id")
+                .dueDate(message.getDueDate()).totalNotice(2)
+                .paymentSourceChannel("channel").paymentMethod("APP").amount(100).fee("1")
+                .paymentDateTime(Instant.parse("2026-10-20T08:01:00Z"))
                 .pagopaPublishedTimestamp(message.getPagopaPublishedTimestamp())
-                .pagopaPersistedTimestamp(message.getTimestamp())
+                .pagopaPersistedTimestamp(Instant.ofEpochMilli(message.getTimestamp()))
                 .sendIngestionTimestamp(ingestionTimestamp)
                 .kafkaPartition(message.getKafkaPartition().toString()).build(), event.getPayload());
         verifyNoInteractions(errorEvent);
@@ -104,7 +103,7 @@ class PagoPaPaymentServiceBatchTest {
     @Test
     void rejectsInvalidTotalNoticeBeforeSendingAnyEvents() {
         PagoPaPaymentMessage invalid = paymentMessage();
-        invalid.getPaymentInfo().setTotalNotice("not-a-number");
+        invalid.setTotalNotice("not-a-number");
 
         assertThrows(NumberFormatException.class,
                 () -> service.sendMessage(List.of(paymentMessage(), invalid), Instant.EPOCH));
@@ -114,9 +113,6 @@ class PagoPaPaymentServiceBatchTest {
 
     private PagoPaPaymentMessage paymentMessage() {
         PagoPaPaymentMessage message = new PagoPaPaymentMessage();
-        message.setDebtorPosition(new DebtorPosition());
-        message.setCreditor(new Creditor());
-        message.setPaymentInfo(new PaymentInfo());
         message.setKafkaPartition(0);
         return message;
     }

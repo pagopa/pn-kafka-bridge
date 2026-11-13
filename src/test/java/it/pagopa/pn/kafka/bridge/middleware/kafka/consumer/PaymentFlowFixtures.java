@@ -11,7 +11,7 @@ import java.util.Optional;
 final class PaymentFlowFixtures {
 
     static final String TOPIC = "payment-events";
-    static final Instant PAYMENT_TIMESTAMP = Instant.parse("2026-10-20T08:00:00Z");
+    static final Instant PERSISTED_TIMESTAMP = Instant.ofEpochMilli(1_792_658_520_000L);
     static final Instant PUBLISHED_TIMESTAMP = Instant.parse("2026-10-20T08:01:00Z");
     static final int MAX_BATCH_BYTES = 1_048_576;
 
@@ -22,16 +22,20 @@ final class PaymentFlowFixtures {
         return """
                 {
                   "id": "payment-%d",
-                  "timestamp": "2026-10-20T08:00:00Z",
-                  "debtorPosition": {
-                    "modelType": "1", "iuv": "iuv-%d", "iur": "iur-%d",
-                    "noticeNumber": "notice-%d"
-                  },
-                  "creditor": {"idPA": "12345678901", "companyName": "Test creditor"},
-                  "paymentInfo": {
-                    "dueDate": "2026-10-21T00:00:00Z", "totalNotice": "2",
-                    "paymentChannel": "PSP", "amount": 1000, "fee": 50, "paymentDateTime": "2026-10-20T08:00:00Z"
-                  }
+                  "timestamp": 1792658520000,
+                  "modelType": "1",
+                  "iuv": "iuv-%d",
+                  "iur": "iur-%d",
+                  "noticeNumber": "notice-%d",
+                  "idPA": "12345678901",
+                  "companyName": "Test creditor",
+                  "paymentDateTime": "2026-10-22T10:42:00Z",
+                  "dueDate": "2026-12-31",
+                  "totalNotice": "2",
+                  "touchpoint": "APP",
+                  "paymentChannel": "PSP",
+                  "amount": "100",
+                  "fee": "1"
                 }
                 """.formatted(index, index, index, index);
     }

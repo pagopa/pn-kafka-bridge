@@ -49,12 +49,15 @@ class PagoPaPaymentConsumerTest {
     void usesKafkaPublicationTimestampAndListenerIngestionTimestamp() {
         Instant published = Instant.parse("2026-10-20T08:01:00Z");
         when(record.timestamp()).thenReturn(published.toEpochMilli());
+        when(record.partition()).thenReturn(3);
         when(record.value()).thenReturn("""
-                {"id":"payment-id","timestamp":"2026-10-20T08:00:00Z",
+                {"id":"payment-id","timestamp":1792658520000,
                  "pagopaPublishedTimestamp":"2000-01-01T00:00:00Z",
-                 "debtorPosition":{"noticeNumber":"notice"},
-                 "creditor":{"idPA":"12345678901"},
-                 "paymentInfo":{"totalNotice":"2","fee":50}}
+                 "modelType":"1","iuv":"iuv","iur":"iur","noticeNumber":"notice",
+                 "idPA":"12345678901","companyName":"Comune",
+                 "paymentDateTime":"2026-10-22T10:42:00Z","dueDate":"2026-12-31",
+                 "totalNotice":"2","touchpoint":"APP","paymentChannel":"ATM",
+                 "amount":"100","fee":"50"}
                 """);
         Instant before = Instant.now();
         when(validatorUtil.isValidPaymentMessage(any(PagoPaPaymentMessage.class))).thenReturn(true);
@@ -66,10 +69,12 @@ class PagoPaPaymentConsumerTest {
         PagoPaPaymentMessage payment = payments.getValue().getFirst();
         assertEquals(published, payment.getPagopaPublishedTimestamp());
         assertEquals(Instant.parse("2026-10-20T08:00:00Z"), payment.getTimestamp());
-        assertEquals("notice", payment.getDebtorPosition().getNoticeNumber());
-        assertEquals("12345678901", payment.getCreditor().getIdPA());
-        assertEquals("2", payment.getPaymentInfo().getTotalNotice());
-        assertEquals(Integer.valueOf(50), payment.getPaymentInfo().getFee());
+        assertEquals(3, payment.getKafkaPartition());
+        assertEquals("notice", payment.getNoticeNumber());
+        assertEquals("12345678901", payment.getIdPA());
+        assertEquals("2", payment.getTotalNotice());
+        assertEquals(100, payment.getAmount());
+        assertEquals(50, payment.getFee());
         assertFalse(ingestionTimestamp.getValue().isBefore(before));
         assertFalse(ingestionTimestamp.getValue().isAfter(after));
     }
@@ -89,7 +94,7 @@ class PagoPaPaymentConsumerTest {
     @ValueSource(strings = {
             "{}",
             "{\"id\":\"123456789012345678901\"}",
-            "{\"id\":\"invalid\",\"debtorPosition\":{}}",
+            "{\"id\":\"invalid\"}",
             "{invalid-json",
             "null"
     })
