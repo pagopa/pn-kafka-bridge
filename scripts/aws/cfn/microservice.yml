@@ -40,21 +40,6 @@ Parameters:
     Description: 'Kafka server for delegations'
     Default: ''
 
-  KafkaPaymentEventsTopicName:
-    Type: String
-    Description: 'Kafka topic name for payment events'
-    Default: ''
-
-  KafkaPaymentEventsGroupId:
-    Type: String
-    Description: 'Kafka group id for payment events'
-    Default: ''
-
-  KafkaPaymentEventsBootstrapServers:
-    Type: String
-    Description: 'Kafka server for payment events'
-    Default: ''
-
   SelfcarePnProductId:
     Type: String
     Description: 'Selfcare product id'
@@ -285,26 +270,6 @@ Parameters:
     Default: '-Dreactor.netty.ioWorkerCount=50 --add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED'
     Description: Java tool options for the Fargate tasks
 
-  KafkaPaymentMaxPollRecords:
-    Type: Number
-    Default: 200
-    Description: Max poll for payments records
-
-  KafkaPaymentFetchMinBytes:
-    Type: Number
-    Default: 256000
-    Description: Minimum fetch bytes for payments records
-
-  KafkaPaymentFetchMaxWaitMs:
-    Type: Number
-    Default: 10000
-    Description: Maximum wait time in milliseconds for fetching payments records
-
-  KafkaPaymentConcurrency:
-    Type: Number
-    Default: 1
-    Description: Concurrency level for processing payments records
-
   MetricFormatType:
     Type: String
     Description: 'Metric format type'
@@ -313,6 +278,11 @@ Parameters:
     Type: String
     Description: 'Cron expression for scheduling the publishing of payment events metrics'
     Default: '0 */5 * * * *'
+
+  ApplicativeEnvFileChecksum:
+    Type: String
+    Default: ''
+    Description: 'Applicative environment variable file checksum'
 
 Resources:
 
@@ -356,21 +326,14 @@ Resources:
         ContainerEnvEntry13: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_BOOTSTRAP_SERVERS=${KafkaDelegationsBootstrapServers}'
         ContainerEnvEntry14: !Sub 'PN_KAFKA_BRIDGE_DELEGATIONS_PROPERTIES_AUTO_COMMIT_INTERVAL_MS=${KafkaBridgeAutoCommitIntervalMillis}'
         ContainerEnvEntry15: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_DELEGATIONS_INPUT=${ProjectName}-kafka_bridge_delegations'
-        ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_MAX_POLL_RECORDS=${KafkaPaymentMaxPollRecords}'
-        ContainerEnvEntry17: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_FETCH_MIN_BYTES=${KafkaPaymentFetchMinBytes}'
-        ContainerEnvEntry18: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_PROPERTIES_FETCH_MAX_WAIT_MS=${KafkaPaymentFetchMaxWaitMs}'
-        ContainerEnvEntry19: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_CONCURRENCY=${KafkaPaymentConcurrency}'
-        ContainerEnvEntry20: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_TOPIC_NAME=${KafkaPaymentEventsTopicName}'
-        ContainerEnvEntry21: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_GROUP_ID=${KafkaPaymentEventsGroupId}'
-        ContainerEnvEntry22: !Sub 'PN_KAFKA_BRIDGE_PAYMENT_EVENTS_BOOTSTRAP_SERVERS=${KafkaPaymentEventsBootstrapServers}'
-        ContainerEnvEntry23: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ERROR_EVENT_INPUT=${KafkaBridgePaymentsQueueDLQName}'
-        ContainerEnvEntry24: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_KAFKA_BRIDGE_PAYMENTS=${KafkaBridgePaymentsQueueName}'
-        ContainerEnvEntry25: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_PAYMENTS_TO_VERIFY=${KafkaBridge2NotificationCostServiceQueueName}'
-        ContainerEnvEntry26: !Sub 'METRIC_FORMAT_TYPE=${MetricFormatType}'
-        ContainerEnvEntry27: !Sub 'PN_KAFKA_BRIDGE_METRICS_PAYMENTS_EVENTS_CRON=${PnKafkaBridgeMetricsPaymentsEventsCron}'
+        ContainerEnvEntry16: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_ERROR_EVENT_INPUT=${KafkaBridgePaymentsQueueDLQName}'
+        ContainerEnvEntry17: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_KAFKA_BRIDGE_PAYMENTS=${KafkaBridgePaymentsQueueName}'
+        ContainerEnvEntry18: !Sub 'PN_KAFKA_BRIDGE_SQS_TOPICS_PAYMENTS_TO_VERIFY=${KafkaBridge2NotificationCostServiceQueueName}'
+        ContainerEnvEntry19: !Sub 'METRIC_FORMAT_TYPE=${MetricFormatType}'
         ContainerSecret1: !Sub 'KAFKA_ONBOARDING_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaOnboardingSaslJaasConfig:AWSCURRENT:'
         ContainerSecret2: !Sub 'KAFKA_DELEGATIONS_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaDelegationsSaslJaasConfig:AWSCURRENT:'
         ContainerSecret3: !Sub 'KAFKA_PAYMENT_SASL_JAAS_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-KafkaBridge-Secrets:KafkaPaymentEventsSaslJaasConfig:AWSCURRENT:'
+        ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         MicroServiceSecretPrefix: pn-KafkaBridge-Secrets
         JavaToolOptions: !Ref JavaToolOptions
         JavaVersion: '25'
