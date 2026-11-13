@@ -6,6 +6,6 @@ import java.time.Instant;
 import java.util.List;
 
 public interface PagoPaPaymentService {
-    void sendMessage(List<String> inputMessages);
+    void sendMalformedMessage(List<String> inputMessages);
     void sendMessage(List<PagoPaPaymentMessage> inputMessages, Instant timestamp);
 }

@@ -120,7 +120,7 @@ class PagoPaPaymentConsumerTest {
                     PaymentFlowFixtures.record(1, invalidBody),
                     PaymentFlowFixtures.record(2, PaymentFlowFixtures.validPayment(2))));
 
-            verify(service).sendMessage(List.of(invalidBody));
+            verify(service).sendMalformedMessage(List.of(invalidBody));
             verify(service).sendMessage(payments.capture(), ingestionTimestamp.capture());
             assertEquals(List.of("payment-0", "payment-2"),
                     payments.getValue().stream().map(PagoPaPaymentMessage::getId).toList());

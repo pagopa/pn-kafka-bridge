@@ -38,7 +38,7 @@ public class PagoPaPaymentConsumer {
 
         Tuple<List<String>, List<PagoPaPaymentMessage>> arrays = createArraysForSqs(records);
 
-        pagoPaPaymentService.sendMessage(arrays._1());
+        pagoPaPaymentService.sendMalformedMessage(arrays._1());
         pagoPaPaymentService.sendMessage(arrays._2(), startExecutionInstant);
     }
 
@@ -46,7 +46,6 @@ public class PagoPaPaymentConsumer {
         try {
             long nowMs = startExecutionInstant.toEpochMilli();
             for (ConsumerRecord<String, String> r : records) {
-                log.debug("Received messages from partition: {}, with key: {}", r.partition(), r.key());
                 kafkaPaymentEventAgeCache.recordAge(r.partition(), Math.max(nowMs - r.timestamp(), 0));
             }
         } catch (Exception e) {

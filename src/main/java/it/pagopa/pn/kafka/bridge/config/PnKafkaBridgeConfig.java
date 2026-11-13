@@ -49,6 +49,7 @@ public class PnKafkaBridgeConfig {
         private String groupId;
         private String topicName;
         private int concurrency = 1;
+        @ToString.Exclude
         private String saslJaasPassword;
         private Duration authExceptionRetryInterval;
         private Map<String, String> properties = new HashMap<>();

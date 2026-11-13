@@ -124,7 +124,7 @@ class PagoPaPaymentServiceBatchTest {
                 .mapToObj(index -> "message-" + index)
                 .toList();
 
-        service.sendMessage(messages);
+        service.sendMalformedMessage(messages);
 
         verify(errorEvent, times((count + 9) / 10)).push(batches.capture());
         List<List<PnErrorEvent>> sentBatches = batches.getAllValues().stream()
