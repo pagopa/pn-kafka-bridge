@@ -24,4 +24,6 @@ public class PagoPaPaymentMessage {
     //Campo valorizzato tramite header del messaggio di kafka
     @JsonIgnore
     private Instant pagopaPublishedTimestamp;
+    @JsonIgnore
+    private Integer kafkaPartition;
 }

@@ -82,6 +82,7 @@ public class PagoPaPaymentConsumer {
                 throw new IllegalArgumentException("Missing Kafka timestamp for payment record at offset " + message.offset());
             }
             payment.setPagopaPublishedTimestamp(Instant.ofEpochMilli(message.timestamp()));
+            payment.setKafkaPartition(message.partition());
             return payment;
         } catch (JacksonException e) {
             log.error("Error deserializing payment record from topic {} partition {} at offset {} ({})",

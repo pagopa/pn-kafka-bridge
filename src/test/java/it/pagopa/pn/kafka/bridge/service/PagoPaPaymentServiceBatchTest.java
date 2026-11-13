@@ -58,6 +58,7 @@ class PagoPaPaymentServiceBatchTest {
         message.setId("payment-id");
         message.setTimestamp(Instant.parse("2026-10-20T08:00:00Z"));
         message.setPagopaPublishedTimestamp(Instant.parse("2026-10-20T08:01:00Z"));
+        message.setKafkaPartition(7);
         message.getDebtorPosition().setModelType("1");
         message.getDebtorPosition().setIuv("iuv");
         message.getDebtorPosition().setIur("iur");
@@ -86,7 +87,8 @@ class PagoPaPaymentServiceBatchTest {
                 .paymentSourceChannel("channel").amount(1000).fee("50").paymentDateTime(Instant.parse("2026-10-20T08:01:00Z"))
                 .pagopaPublishedTimestamp(message.getPagopaPublishedTimestamp())
                 .pagopaPersistedTimestamp(message.getTimestamp())
-                .sendIngestionTimestamp(ingestionTimestamp).build(), event.getPayload());
+                .sendIngestionTimestamp(ingestionTimestamp)
+                .kafkaPartition(message.getKafkaPartition().toString()).build(), event.getPayload());
         verifyNoInteractions(errorEvent);
     }
 
@@ -96,7 +98,7 @@ class PagoPaPaymentServiceBatchTest {
 
         verify(noticePaymentEvent).push(paymentBatches.capture());
         assertEquals(PnNoticePaymentEvent.Payload.builder()
-                .sendIngestionTimestamp(Instant.EPOCH).build(), paymentBatches.getValue().getFirst().getPayload());
+                .sendIngestionTimestamp(Instant.EPOCH).kafkaPartition("0").build(), paymentBatches.getValue().getFirst().getPayload());
     }
 
     @Test
@@ -115,6 +117,7 @@ class PagoPaPaymentServiceBatchTest {
         message.setDebtorPosition(new DebtorPosition());
         message.setCreditor(new Creditor());
         message.setPaymentInfo(new PaymentInfo());
+        message.setKafkaPartition(0);
         return message;
     }
 

@@ -67,6 +67,7 @@ public class PagoPaPaymentMapper {
                         .pagopaPublishedTimestamp(message.getPagopaPublishedTimestamp())
                         .sendIngestionTimestamp(ingestionTimestamp)
                         .pagopaPersistedTimestamp(message.getTimestamp())
+                        .kafkaPartition(message.getKafkaPartition() != null ? message.getKafkaPartition().toString() : null)
                         .build())
                 .build();
     }
