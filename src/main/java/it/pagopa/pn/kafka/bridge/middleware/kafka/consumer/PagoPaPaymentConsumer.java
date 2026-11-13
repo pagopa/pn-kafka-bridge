@@ -32,7 +32,7 @@ public class PagoPaPaymentConsumer {
             topics = "${pn.kafka-bridge.payment-events.topic-name}",
             containerFactory = "paymentEventsKafkaListenerContainerFactory")
     public void listen(List<ConsumerRecord<String, String>> records) {
-        log.debug("Received {} records", records.size());
+        log.debug("Received {} records from partitions: {}", records.size(), records.stream().map(ConsumerRecord::partition).distinct().toList());
         Instant startExecutionInstant = Instant.now();
         traceRecordsAge(records, startExecutionInstant);
 
