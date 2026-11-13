@@ -60,7 +60,7 @@ class PagoPaPaymentServiceImplTest {
         List<PnErrorEvent> events = messages.stream().map(this::errorEvent).toList();
         when(mapper.buildMalformedEvents(messages)).thenReturn(events);
 
-        service.sendMessage(messages);
+        service.sendMalformedMessage(messages);
 
         verify(mapper).buildMalformedEvents(messages);
         verify(errorProducer, times(Math.ceilDiv(count, 10))).push(errorBatches.capture());
@@ -93,7 +93,7 @@ class PagoPaPaymentServiceImplTest {
         List<PnErrorEvent> events = messages.stream().map(this::errorEvent).toList();
         when(mapper.buildMalformedEvents(messages)).thenReturn(events);
 
-        service.sendMessage(messages);
+        service.sendMalformedMessage(messages);
 
         verify(errorProducer, times(2)).push(errorBatches.capture());
         assertTrue(errorBatches.getAllValues().stream().allMatch(batch -> batch.size() == 1));
@@ -107,7 +107,7 @@ class PagoPaPaymentServiceImplTest {
         List<PnErrorEvent> events = messages.stream().map(this::errorEvent).toList();
         when(mapper.buildMalformedEvents(messages)).thenReturn(events);
 
-        service.sendMessage(messages);
+        service.sendMalformedMessage(messages);
 
         verify(errorProducer).push(List.of(events.get(0), events.get(2)));
         verifyNoInteractions(paymentProducer);
@@ -118,7 +118,7 @@ class PagoPaPaymentServiceImplTest {
         List<String> messages = List.of("x".repeat(MAX_BATCH_BYTES));
         when(mapper.buildMalformedEvents(messages)).thenReturn(List.of(errorEvent(messages.get(0))));
 
-        service.sendMessage(messages);
+        service.sendMalformedMessage(messages);
 
         verifyNoInteractions(errorProducer, paymentProducer);
     }
@@ -137,7 +137,7 @@ class PagoPaPaymentServiceImplTest {
         service = new PagoPaPaymentServiceImpl(errorProducer, paymentProducer, failingMapper, mapper);
 
         IllegalStateException thrown = assertThrows(IllegalStateException.class,
-                () -> service.sendMessage(messages));
+                () -> service.sendMalformedMessage(messages));
 
         assertEquals("Cannot serialize malformed event for SQS size validation", thrown.getMessage());
         assertSame(failure, thrown.getCause());
@@ -152,7 +152,7 @@ class PagoPaPaymentServiceImplTest {
         IllegalStateException failure = new IllegalStateException("Error queue unavailable");
         doThrow(failure).when(errorProducer).push(events);
 
-        assertSame(failure, assertThrows(IllegalStateException.class, () -> service.sendMessage(messages)));
+        assertSame(failure, assertThrows(IllegalStateException.class, () -> service.sendMalformedMessage(messages)));
 
         verifyNoInteractions(paymentProducer);
     }

@@ -1,6 +1,7 @@
 package it.pagopa.pn.kafka.bridge.config;
 
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -48,9 +49,15 @@ public class PnKafkaBridgeConfig {
         private String groupId;
         private String topicName;
         private int concurrency = 1;
+        @ToString.Exclude
         private String saslJaasPassword;
         private Duration authExceptionRetryInterval;
         private Map<String, String> properties = new HashMap<>();
+    }
+
+    @PostConstruct
+    public void logConfig() {
+        log.info("Kafka Bridge configuration: {}", this);
     }
 
 }

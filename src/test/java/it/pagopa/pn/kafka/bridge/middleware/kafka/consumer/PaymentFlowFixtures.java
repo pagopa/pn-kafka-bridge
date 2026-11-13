@@ -23,15 +23,19 @@ final class PaymentFlowFixtures {
                 {
                   "id": "payment-%d",
                   "timestamp": "2026-10-20T08:00:00Z",
-                  "debtorPosition": {
-                    "modelType": "1", "iuv": "iuv-%d", "iur": "iur-%d",
-                    "noticeNumber": "notice-%d"
-                  },
-                  "creditor": {"idPA": "12345678901", "companyName": "Test creditor"},
-                  "paymentInfo": {
-                    "dueDate": "2026-10-21T00:00:00Z", "totalNotice": "2",
-                    "paymentChannel": "PSP", "amount": 1000, "fee": 50, "paymentDateTime": "2026-10-20T08:00:00Z"
-                  }
+                  "modelType": "1",
+                  "iuv": "iuv-%d",
+                  "iur": "iur-%d",
+                  "noticeNumber": "notice-%d",
+                  "idPA": "12345678901",
+                  "companyName": "Test creditor",
+                  "paymentDateTime": "2026-10-22T10:42:00Z",
+                  "dueDate": "2026-12-31",
+                  "totalNotice": "2",
+                  "touchpoint": "APP",
+                  "paymentChannel": "PSP",
+                  "amount": "100",
+                  "fee": "1"
                 }
                 """.formatted(index, index, index, index);
     }

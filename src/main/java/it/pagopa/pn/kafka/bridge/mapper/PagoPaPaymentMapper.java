@@ -1,10 +1,7 @@
 package it.pagopa.pn.kafka.bridge.mapper;
 
 import it.pagopa.pn.api.dto.events.*;
-import it.pagopa.pn.kafka.bridge.model.Creditor;
-import it.pagopa.pn.kafka.bridge.model.DebtorPosition;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
-import it.pagopa.pn.kafka.bridge.model.PaymentInfo;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -38,10 +35,6 @@ public class PagoPaPaymentMapper {
     }
 
     public PnNoticePaymentEvent toPnNoticePaymentEvent(PagoPaPaymentMessage message, Instant ingestionTimestamp) {
-        DebtorPosition debtorPosition = message.getDebtorPosition();
-        Creditor creditor = message.getCreditor();
-        PaymentInfo paymentInfo = message.getPaymentInfo();
-
         return PnNoticePaymentEvent.builder()
                 .header(GenericEventHeader.builder()
                         .eventId("NOTICE_PAYMENT_EVENT_" + UUID.randomUUID())
@@ -50,23 +43,26 @@ public class PagoPaPaymentMapper {
                         .publisher(EventPublisher.KAFKA_BRIDGE.name())
                         .build())
                 .payload(PnNoticePaymentEvent.Payload.builder()
-                        .modelType(debtorPosition.getModelType())
-                        .iuv(debtorPosition.getIuv())
-                        .iur(debtorPosition.getIur())
-                        .noticeCode(debtorPosition.getNoticeNumber())
-                        .creditorTaxId(creditor.getIdPA())
-                        .creditorCompanyName(creditor.getCompanyName())
+                        .modelType(message.getModelType())
+                        .iuv(message.getIuv())
+                        .iur(message.getIur())
+                        .noticeCode(message.getNoticeNumber())
+                        .creditorTaxId(message.getIdPA())
+                        .creditorCompanyName(message.getCompanyName())
                         .paymentId(message.getId())
-                        .paymentDateTime(message.getPaymentInfo().getPaymentDateTime())
-                        .dueDate(paymentInfo.getDueDate())
-                        .totalNotice(paymentInfo.getTotalNotice() == null
-                                ? null : Integer.valueOf(paymentInfo.getTotalNotice()))
-                        .paymentSourceChannel(paymentInfo.getPaymentChannel())
-                        .amount(paymentInfo.getAmount())
-                        .fee(paymentInfo.getFee() == null ? null : paymentInfo.getFee().toString())
+                        .paymentDateTime(message.getPaymentDateTime())
+                        .dueDate(message.getDueDate())
+                        .totalNotice(message.getTotalNotice() == null
+                                ? null : Integer.valueOf(message.getTotalNotice()))
+                        .paymentSourceChannel(message.getPaymentChannel())
+                        .paymentMethod(message.getTouchpoint())
+                        .amount(message.getAmount())
+                        .fee(message.getFee() == null ? null : message.getFee().toString())
                         .pagopaPublishedTimestamp(message.getPagopaPublishedTimestamp())
                         .sendIngestionTimestamp(ingestionTimestamp)
-                        .pagopaPersistedTimestamp(message.getTimestamp())
+                        .pagopaPersistedTimestamp(message.getTimestamp() == null
+                                ? null : message.getTimestamp())
+                        .kafkaPartition(message.getKafkaPartition() != null ? message.getKafkaPartition().toString() : null)
                         .build())
                 .build();
     }

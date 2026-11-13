@@ -33,15 +33,13 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
     private final PagoPaPaymentMapper mapper;
 
     @Override
-    public void sendMessage(List<String> inputMessages) {
+    public void sendMalformedMessage(List<String> inputMessages) {
         List<PnErrorEvent> events = mapper.buildMalformedEvents(inputMessages);
         log.debug("Built malformed events: {}", events);
         buildMalformedBatches(events).parallelStream()
                 .forEach(batch -> {
                     try {
-                        log.debug("Sending messages to SQS: {}", batch);
                         errorEvent.push(batch);
-                        log.debug("Message sent to SQS: {}", batch);
                     } catch (Exception ex) {
                         log.error("Error, unable to send message to SQS queue : ", ex);
                         throw ex;
@@ -116,9 +114,12 @@ public class PagoPaPaymentServiceImpl implements PagoPaPaymentService {
                 .map(index -> index * BATCH_SIZE)
                 .mapToObj(start -> events.subList(start, Math.min(start + BATCH_SIZE, events.size())))
                 .forEach(batch -> {
-                    log.debug("Sending messages to SQS: {}", batch);
-                    noticePaymentEvent.push(batch);
-                    log.debug("Message sent to SQS: {}", batch);
+                    try {
+                        noticePaymentEvent.push(batch);
+                    } catch (Exception ex) {
+                        log.error("Error, unable to send message to SQS queue : ", ex);
+                        throw ex;
+                    }
                 });
     }
 
