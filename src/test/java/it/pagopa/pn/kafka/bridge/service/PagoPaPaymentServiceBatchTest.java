@@ -53,7 +53,7 @@ class PagoPaPaymentServiceBatchTest {
     void mapsPaymentFieldsAndDistinctTimestamps() {
         PagoPaPaymentMessage message = paymentMessage();
         message.setId("payment-id");
-        message.setTimestamp(Instant.parse("2026-10-20T08:00:00Z").toEpochMilli());
+        message.setTimestamp(Instant.parse("2026-10-20T08:00:00Z"));
         message.setPagopaPublishedTimestamp(Instant.parse("2026-10-20T08:01:00Z"));
         message.setKafkaPartition(7);
         message.setModelType("1");
@@ -85,7 +85,7 @@ class PagoPaPaymentServiceBatchTest {
                 .paymentSourceChannel("channel").paymentMethod("APP").amount(100).fee("1")
                 .paymentDateTime(Instant.parse("2026-10-20T08:01:00Z"))
                 .pagopaPublishedTimestamp(message.getPagopaPublishedTimestamp())
-                .pagopaPersistedTimestamp(Instant.ofEpochMilli(message.getTimestamp()))
+                .pagopaPersistedTimestamp(message.getTimestamp())
                 .sendIngestionTimestamp(ingestionTimestamp)
                 .kafkaPartition(message.getKafkaPartition().toString()).build(), event.getPayload());
         verifyNoInteractions(errorEvent);

@@ -11,7 +11,7 @@ import java.util.Optional;
 final class PaymentFlowFixtures {
 
     static final String TOPIC = "payment-events";
-    static final Instant PERSISTED_TIMESTAMP = Instant.ofEpochMilli(1_792_658_520_000L);
+    static final Instant PAYMENT_TIMESTAMP = Instant.parse("2026-10-20T08:00:00Z");
     static final Instant PUBLISHED_TIMESTAMP = Instant.parse("2026-10-20T08:01:00Z");
     static final int MAX_BATCH_BYTES = 1_048_576;
 
@@ -22,7 +22,7 @@ final class PaymentFlowFixtures {
         return """
                 {
                   "id": "payment-%d",
-                  "timestamp": 1792658520000,
+                  "timestamp": "2026-10-20T08:00:00Z",
                   "modelType": "1",
                   "iuv": "iuv-%d",
                   "iur": "iur-%d",

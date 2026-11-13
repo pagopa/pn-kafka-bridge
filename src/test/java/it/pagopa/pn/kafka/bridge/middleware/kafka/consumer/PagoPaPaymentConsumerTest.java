@@ -51,7 +51,7 @@ class PagoPaPaymentConsumerTest {
         when(record.timestamp()).thenReturn(published.toEpochMilli());
         when(record.partition()).thenReturn(3);
         when(record.value()).thenReturn("""
-                {"id":"payment-id","timestamp":1792658520000,
+                {"id":"payment-id","timestamp":"2026-10-20T08:00:00Z",
                  "pagopaPublishedTimestamp":"2000-01-01T00:00:00Z",
                  "modelType":"1","iuv":"iuv","iur":"iur","noticeNumber":"notice",
                  "idPA":"12345678901","companyName":"Comune",

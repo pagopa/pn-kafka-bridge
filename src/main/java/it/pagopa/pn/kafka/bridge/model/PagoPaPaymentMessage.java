@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public class PagoPaPaymentMessage {
     @NotNull
     private String id;
-    private Long timestamp;
+    private Instant timestamp;
     @Length(max = 1000)
     private String modelType;
     @Length(max = 1000)
