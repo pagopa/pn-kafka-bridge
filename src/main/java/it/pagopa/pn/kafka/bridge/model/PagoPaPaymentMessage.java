@@ -16,6 +16,7 @@ import java.time.LocalDate;
 public class PagoPaPaymentMessage {
     @NotNull
     private String id;
+    @JsonDeserialize(using = EpochMillisInstantDeserializer.class)
     private Instant timestamp;
     @Length(max = 1000)
     private String modelType;
