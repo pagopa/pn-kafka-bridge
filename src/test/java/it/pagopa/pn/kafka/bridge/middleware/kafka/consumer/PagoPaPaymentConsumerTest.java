@@ -73,8 +73,8 @@ class PagoPaPaymentConsumerTest {
         assertEquals("notice", payment.getNoticeNumber());
         assertEquals("12345678901", payment.getIdPA());
         assertEquals("2", payment.getTotalNotice());
-        assertEquals(100, payment.getAmount());
-        assertEquals(50, payment.getFee());
+        assertEquals(10000, payment.getAmount());
+        assertEquals(5000, payment.getFee());
         assertFalse(ingestionTimestamp.getValue().isBefore(before));
         assertFalse(ingestionTimestamp.getValue().isAfter(after));
     }
@@ -107,6 +107,15 @@ class PagoPaPaymentConsumerTest {
     void routesInvalidTotalNoticeWithoutDiscardingValidRecords(String totalNotice) {
         String invalidBody = PaymentFlowFixtures.validPayment(1)
                 .replace("\"totalNotice\": \"2\"", "\"totalNotice\": \"" + totalNotice + "\"");
+
+        assertMalformedRouting(invalidBody);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"\"0.001\"", "\"21474836.48\"", "\"invalid\""})
+    void routesAmountsThatCannotBeConvertedExactlyToMalformedMessages(String amount) {
+        String invalidBody = PaymentFlowFixtures.validPayment(1)
+                .replace("\"amount\": \"100\"", "\"amount\": " + amount);
 
         assertMalformedRouting(invalidBody);
     }

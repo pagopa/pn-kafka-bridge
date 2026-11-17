@@ -113,8 +113,8 @@ class PagoPaPaymentFlowTest {
         assertEquals(Integer.valueOf(2), first.getTotalNotice());
         assertEquals("PSP", first.getPaymentSourceChannel());
         assertEquals("APP", first.getPaymentMethod());
-        assertEquals(Integer.valueOf(100), first.getAmount());
-        assertEquals("1", first.getFee());
+        assertEquals(Integer.valueOf(10000), first.getAmount());
+        assertEquals("100", first.getFee());
         assertEquals(PUBLISHED_TIMESTAMP, first.getPagopaPublishedTimestamp());
         assertEquals("0", first.getKafkaPartition());
         assertBetween(before, after, first.getSendIngestionTimestamp());
@@ -123,6 +123,20 @@ class PagoPaPaymentFlowTest {
         assertEquals(PUBLISHED_TIMESTAMP.plusMillis(2), second.getPagopaPublishedTimestamp());
         assertEquals(first.getSendIngestionTimestamp(), second.getSendIngestionTimestamp());
         assertHeaders(paymentRequest, EventType.NOTICE_PAYMENT);
+    }
+
+    @Test
+    void forwardsDecimalAmountsAsEuroCents() throws Exception {
+        successfulSqs();
+        String input = validPayment(0)
+                .replace("\"amount\": \"100\"", "\"amount\": \"50.35\"")
+                .replace("\"fee\": \"1\"", "\"fee\": \"1.25\"");
+
+        consumer.listen(List.of(record(0, input)));
+
+        PnNoticePaymentEvent.Payload payload = payment(requests(1).getFirst().entries().getFirst());
+        assertEquals(5035, payload.getAmount());
+        assertEquals("125", payload.getFee());
     }
 
     @Test
