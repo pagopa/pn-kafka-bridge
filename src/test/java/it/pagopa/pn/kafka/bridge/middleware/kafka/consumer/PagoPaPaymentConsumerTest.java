@@ -1,5 +1,6 @@
 package it.pagopa.pn.kafka.bridge.middleware.kafka.consumer;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.kafka.bridge.model.PagoPaPaymentMessage;
 import it.pagopa.pn.kafka.bridge.service.PagoPaPaymentService;
@@ -10,6 +11,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -57,7 +59,7 @@ class PagoPaPaymentConsumerTest {
                  "pagopaPublishedTimestamp":"2000-01-01T00:00:00Z",
                  "modelType":"1","iuv":"iuv","iur":"iur","noticeNumber":"notice",
                  "idPA":"12345678901","companyName":"Comune",
-                 "paymentDateTime":"2026-10-22T10:42:00Z","dueDate":"2026-12-31",
+                 "paymentDateTime":"2026-10-22T12:42:00.000000","dueDate":"2026-12-31",
                  "totalNotice":"2","touchpoint":"APP","paymentChannel":"ATM",
                  "amount":"100","fee":"50"}
                 """);
@@ -92,9 +94,16 @@ class PagoPaPaymentConsumerTest {
         verifyNoInteractions(service);
     }
 
-    @Test
-    void acceptsProvidedKafkaPaymentWithUtcPaymentDateTime() {
-        String input = "{\"modelType\":\"2\",\"iuv\":\"05000000076402265\",\"iur\":\"319e77263a114656a63d00a5fc4daea0\",\"noticeNumber\":\"305000000076402265\",\"idPA\":\"09982061005\",\"companyName\":\"Equitalia Giustizia S.P.A.\",\"paymentDateTime\":\"2026-11-17T16:27:00.739936Z\",\"dueDate\":\"2100-12-30\",\"totalNotice\":\"1\",\"touchpoint\":null,\"paymentChannel\":null,\"amount\":\"486.41\",\"fee\":\"1\",\"id\":\"46c8c250-4d09-44f8-a6cd-1ee903e51b06\",\"timestamp\":1794929244155}";
+    @ParameterizedTest
+    @CsvSource({
+            "2026-11-17T16:27:00.739936, 2026-11-17T15:27:00.739936Z",
+            "2026-07-17T16:27:00.739936, 2026-07-17T14:27:00.739936Z",
+            "2026-03-29T02:30:00.000000, 2026-03-29T01:30:00Z",
+            "2026-10-25T02:30:00.000000, 2026-10-25T00:30:00Z"
+    })
+    void acceptsProvidedKafkaPaymentWithRomeLocalPaymentDateTime(String paymentDateTime, String expectedInstant) {
+        String input = "{\"modelType\":\"2\",\"iuv\":\"05000000076402265\",\"iur\":\"319e77263a114656a63d00a5fc4daea0\",\"noticeNumber\":\"305000000076402265\",\"idPA\":\"09982061005\",\"companyName\":\"Equitalia Giustizia S.P.A.\",\"paymentDateTime\":\"%s\",\"dueDate\":\"2100-12-30\",\"totalNotice\":\"1\",\"touchpoint\":null,\"paymentChannel\":null,\"amount\":\"486.41\",\"fee\":\"1\",\"id\":\"46c8c250-4d09-44f8-a6cd-1ee903e51b06\",\"timestamp\":1794929244155}"
+                .formatted(paymentDateTime);
 
         try (var factory = Validation.buildDefaultValidatorFactory()) {
             var consumer = new PagoPaPaymentConsumer(service,
@@ -112,7 +121,7 @@ class PagoPaPaymentConsumerTest {
             assertEquals("305000000076402265", payment.getNoticeNumber());
             assertEquals("09982061005", payment.getIdPA());
             assertEquals("Equitalia Giustizia S.P.A.", payment.getCompanyName());
-            assertEquals(Instant.parse("2026-11-17T16:27:00.739936Z"), payment.getPaymentDateTime());
+            assertEquals(Instant.parse(expectedInstant), payment.getPaymentDateTime());
             assertEquals(LocalDate.parse("2100-12-30"), payment.getDueDate());
             assertEquals("1", payment.getTotalNotice());
             assertNull(payment.getTouchpoint());
@@ -124,6 +133,26 @@ class PagoPaPaymentConsumerTest {
             assertEquals(PaymentFlowFixtures.PUBLISHED_TIMESTAMP, payment.getPagopaPublishedTimestamp());
             assertEquals(0, payment.getKafkaPartition());
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "\"2026-11-17T16:27:00.739936Z\"",
+            "\"2026-11-17T16:27:00.739936+01:00\"",
+            "\"2026-11-17T16:27:00\"",
+            "\"2026-11-17T16:27:00.73993\"",
+            "\"2026-11-17T16:27:00.7399361\"",
+            "\"2026-02-31T16:27:00.739936\"",
+            "1794929244155"
+    })
+    void rejectsPaymentDateTimeOutsideExpectedFormat(String paymentDateTime) {
+        String input = PaymentFlowFixtures.validPayment(1)
+                .replace("\"2026-10-22T12:42:00.000000\"", paymentDateTime);
+
+        JsonMappingException exception = assertThrows(JsonMappingException.class,
+                () -> objectMapper.readValue(input, PagoPaPaymentMessage.class));
+        assertEquals("paymentDateTime", exception.getPath().getFirst().getFieldName());
+        assertMalformedRouting(input);
     }
 
     @ParameterizedTest

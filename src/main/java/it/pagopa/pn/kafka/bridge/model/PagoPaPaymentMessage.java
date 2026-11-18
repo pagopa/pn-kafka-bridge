@@ -33,6 +33,7 @@ public class PagoPaPaymentMessage {
     @Length(max = 1000)
     private String companyName;
     @NotNull
+    @JsonDeserialize(using = PaymentDateTimeDeserializer.class)
     private Instant paymentDateTime;
     private LocalDate dueDate;
     @Length(max = 1000)

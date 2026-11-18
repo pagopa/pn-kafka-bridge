@@ -67,7 +67,7 @@ class KafkaBridgePaymentsFlowTest {
         payment = objectMapper.readValue("""
                 {"id":"payment-id","timestamp":1792658520000,
                  "noticeNumber":"notice-code","idPA":"12345678901",
-                 "paymentDateTime":"2026-10-22T10:42:00Z","totalNotice":"2",
+                 "paymentDateTime":"2026-10-22T12:42:00.000000","totalNotice":"2",
                  "amount":"100","fee":"50"}
                 """, PagoPaPaymentMessage.class);
         when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
