@@ -29,7 +29,7 @@ final class PaymentFlowFixtures {
                   "noticeNumber": "notice-%d",
                   "idPA": "12345678901",
                   "companyName": "Test creditor",
-                  "paymentDateTime": "2026-10-22T10:42:00Z",
+                  "paymentDateTime": "2026-10-22T12:42:00.000000",
                   "dueDate": "2026-12-31",
                   "totalNotice": "2",
                   "touchpoint": "APP",
