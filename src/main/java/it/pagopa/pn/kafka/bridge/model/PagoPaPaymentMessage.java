@@ -1,6 +1,7 @@
 package it.pagopa.pn.kafka.bridge.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 public class PagoPaPaymentMessage {
     @NotNull
     private String id;
+    @JsonDeserialize(using = EpochMillisInstantDeserializer.class)
     private Instant timestamp;
     @Length(max = 1000)
     private String modelType;
@@ -31,6 +33,7 @@ public class PagoPaPaymentMessage {
     @Length(max = 1000)
     private String companyName;
     @NotNull
+    @JsonDeserialize(using = PaymentDateTimeDeserializer.class)
     private Instant paymentDateTime;
     private LocalDate dueDate;
     @Length(max = 1000)
@@ -43,7 +46,9 @@ public class PagoPaPaymentMessage {
     @Length(max = 1000)
     private String paymentChannel;
     @NotNull
+    @JsonDeserialize(using = EuroCentDeserializer.class)
     private Integer amount;
+    @JsonDeserialize(using = EuroCentDeserializer.class)
     private Integer fee;
     //Campo valorizzato tramite header del messaggio di kafka
     @JsonIgnore
