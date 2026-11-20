@@ -419,7 +419,7 @@ Resources:
   KafkaBridgePaymentEventAgeHighAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${ProjectName}-payment-event-age-high"
+      AlarmName: !Sub "${ProjectName}-kafka-bridge-payment-event-age-high"
       AlarmDescription: "Alert when the age of payment events exceeds 7200 seconds for 11 consecutive periods."
       AlarmActions:
         - !Ref AlarmSNSTopicArn
@@ -439,7 +439,7 @@ Resources:
   KafkaBridgePaymentEventAgeMissingAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${ProjectName}-payment-event-age-missing"
+      AlarmName: !Sub "${ProjectName}-kafka-bridge-payment-event-age-missing"
       AlarmDescription: "Alert when the payment event age metric is absent for one hour."
       AlarmActions:
         - !Ref AlarmSNSTopicArn
@@ -459,7 +459,7 @@ Resources:
   KafkaBridgePaymentEventConsecutiveEmptyWindowsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmName: !Sub "${ProjectName}-payment-event-consecutive-empty-windows"
+      AlarmName: !Sub "${ProjectName}-kafka-bridge-payment-event-consecutive-empty-windows"
       AlarmDescription: "Alert when consecutive empty payment event windows reach the configured threshold."
       AlarmActions:
         - !Ref AlarmSNSTopicArn
