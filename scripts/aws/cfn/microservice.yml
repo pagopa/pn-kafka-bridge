@@ -457,7 +457,7 @@ Resources:
       TreatMissingData: breaching
 
   KafkaBridgePaymentEventConsecutiveEmptyWindowsAlarm:
-    Type: AWS::CloudFormation::Alarm
+    Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub "${ProjectName}-payment-event-consecutive-empty-windows"
       AlarmDescription: "Alert when consecutive empty payment event windows reach the configured threshold."
