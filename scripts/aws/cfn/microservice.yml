@@ -486,9 +486,9 @@ Resources:
         AlarmArns: !Join
           - ','
           - - !GetAtt KafkaBridgeMicroservice.Outputs.FatalLogsMetricAlarmArn
-            - !Ref KafkaBridgePaymentEventAgeHighAlarm
-            - !Ref KafkaBridgePaymentEventAgeMissingAlarm
-            - !Ref KafkaBridgePaymentEventConsecutiveEmptyWindowsAlarm
+            - !GetAtt KafkaBridgePaymentEventAgeHighAlarm.Arn
+            - !GetAtt KafkaBridgePaymentEventAgeMissingAlarm.Arn
+            - !GetAtt KafkaBridgePaymentEventConsecutiveEmptyWindowsAlarm.Arn
             - !Ref KafkaBridgeOnboardingQueueAlarmARN
             - !Ref KafkaBridgeOnboardingQueueAgeAlarmARN
             - !Ref KafkaBridgePaymentsQueueAlarmARN
