@@ -279,6 +279,16 @@ Parameters:
     Description: 'Cron expression for scheduling the publishing of payment events metrics'
     Default: '0 */5 * * * *'
 
+  PaymentEventAgeHighAlarmThreshold:
+    Type: Number
+    Default: 7200
+    Description: Payment event age threshold in seconds for the high age alarm
+
+  PaymentEventAgeMissingAlarmPeriod:
+    Type: Number
+    Default: 3600
+    Description: Period in seconds for the missing payment event age metric alarm
+
   PaymentEventConsecutiveEmptyWindowsAlarmPeriod:
     Type: Number
     Default: 300
@@ -420,7 +430,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub "${ProjectName}-kafka-bridge-payment-event-age-high"
-      AlarmDescription: "Alert when the age of payment events exceeds 7200 seconds for 11 consecutive periods."
+      AlarmDescription: "Alert when the age of payment events exceeds the configured threshold for 11 consecutive periods."
       AlarmActions:
         - !Ref AlarmSNSTopicArn
       OKActions:
@@ -433,14 +443,14 @@ Resources:
       DatapointsToAlarm: 11
       Period: 300
       Statistic: Maximum
-      Threshold: 7200
+      Threshold: !Ref PaymentEventAgeHighAlarmThreshold
       TreatMissingData: notBreaching
 
   KafkaBridgePaymentEventAgeMissingAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub "${ProjectName}-kafka-bridge-payment-event-age-missing"
-      AlarmDescription: "Alert when the payment event age metric is absent for one hour."
+      AlarmDescription: "Alert when the payment event age metric is absent for the configured period."
       AlarmActions:
         - !Ref AlarmSNSTopicArn
       OKActions:
@@ -451,7 +461,7 @@ Resources:
       ComparisonOperator: LessThanThreshold
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
-      Period: 3600
+      Period: !Ref PaymentEventAgeMissingAlarmPeriod
       Statistic: Maximum
       Threshold: -1
       TreatMissingData: breaching
