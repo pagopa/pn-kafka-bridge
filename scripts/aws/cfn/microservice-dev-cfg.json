@@ -11,6 +11,9 @@
     "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false",
     "MountEfs": "false",
-    "MetricFormatType": "EMF"
+    "MetricFormatType": "EMF",
+    "PaymentEventAgeHighAlarmThreshold": "7200",
+    "PaymentEventAgeMissingAlarmPeriod": "3600",
+    "PaymentEventConsecutiveEmptyWindowsAlarmThreshold": "999999"
   }
 }

@@ -279,6 +279,51 @@ Parameters:
     Description: 'Cron expression for scheduling the publishing of payment events metrics'
     Default: '0 */5 * * * *'
 
+  PaymentEventAgeHighAlarmThreshold:
+    Type: Number
+    Default: 7200
+    Description: Payment event age threshold in seconds for the high age alarm
+
+  PaymentEventAgeMissingAlarmPeriod:
+    Type: Number
+    Default: 3600
+    Description: Period in seconds for the missing payment event age metric alarm
+
+  PaymentEventConsecutiveEmptyWindowsAlarmPeriod:
+    Type: Number
+    Default: 300
+    Description: Period in seconds for the consecutive empty windows alarm
+
+  PaymentEventConsecutiveEmptyWindowsAlarmThreshold:
+    Type: Number
+    Default: 12
+    Description: Consecutive empty windows required to trigger the alarm
+
+  PaymentEventConsecutiveEmptyWindowsAlarmEvaluationPeriods:
+    Type: Number
+    Default: 1
+    Description: Evaluation periods for the consecutive empty windows alarm
+
+  PaymentEventConsecutiveEmptyWindowsAlarmDatapointsToAlarm:
+    Type: Number
+    Default: 1
+    Description: Datapoints to alarm for the consecutive empty windows alarm
+
+  PaymentEventConsecutiveEmptyWindowsAlarmStatistic:
+    Type: String
+    Default: Maximum
+    Description: Statistic for the consecutive empty windows metric
+
+  PaymentEventConsecutiveEmptyWindowsAlarmComparisonOperator:
+    Type: String
+    Default: GreaterThanOrEqualToThreshold
+    Description: Comparison operator for the consecutive empty windows alarm
+
+  PaymentEventConsecutiveEmptyWindowsAlarmTreatMissingData:
+    Type: String
+    Default: notBreaching
+    Description: Missing-data treatment for the consecutive empty windows alarm
+
   ApplicativeEnvFileChecksum:
     Type: String
     Default: ''
@@ -381,6 +426,66 @@ Resources:
             Resource:
               - !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${ProjectName}-kafka_bridge_delegations'
 
+  KafkaBridgePaymentEventAgeHighAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-kafka-bridge-payment-event-age-high"
+      AlarmDescription: "Alert when the age of payment events exceeds the configured threshold for 11 consecutive periods."
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      MetricName: payment_event_age
+      Namespace: pn-kafka-bridge
+      Unit: Seconds
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 11
+      DatapointsToAlarm: 11
+      Period: 300
+      Statistic: Maximum
+      Threshold: !Ref PaymentEventAgeHighAlarmThreshold
+      TreatMissingData: notBreaching
+
+  KafkaBridgePaymentEventAgeMissingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-kafka-bridge-payment-event-age-missing"
+      AlarmDescription: "Alert when the payment event age metric is absent for the configured period."
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      MetricName: payment_event_age
+      Namespace: pn-kafka-bridge
+      Unit: Seconds
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Period: !Ref PaymentEventAgeMissingAlarmPeriod
+      Statistic: Maximum
+      Threshold: -1
+      TreatMissingData: breaching
+
+  KafkaBridgePaymentEventConsecutiveEmptyWindowsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-kafka-bridge-payment-event-consecutive-empty-windows"
+      AlarmDescription: "Alert when consecutive empty payment event windows reach the configured threshold."
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      MetricName: payment_event_consecutive_empty_windows
+      Namespace: pn-kafka-bridge
+      Unit: Count
+      ComparisonOperator: !Ref PaymentEventConsecutiveEmptyWindowsAlarmComparisonOperator
+      EvaluationPeriods: !Ref PaymentEventConsecutiveEmptyWindowsAlarmEvaluationPeriods
+      DatapointsToAlarm: !Ref PaymentEventConsecutiveEmptyWindowsAlarmDatapointsToAlarm
+      Period: !Ref PaymentEventConsecutiveEmptyWindowsAlarmPeriod
+      Statistic: !Ref PaymentEventConsecutiveEmptyWindowsAlarmStatistic
+      Threshold: !Ref PaymentEventConsecutiveEmptyWindowsAlarmThreshold
+      TreatMissingData: !Ref PaymentEventConsecutiveEmptyWindowsAlarmTreatMissingData
+
   ## Dashboard
   KafkaBridgeMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack
@@ -391,6 +496,9 @@ Resources:
         AlarmArns: !Join
           - ','
           - - !GetAtt KafkaBridgeMicroservice.Outputs.FatalLogsMetricAlarmArn
+            - !GetAtt KafkaBridgePaymentEventAgeHighAlarm.Arn
+            - !GetAtt KafkaBridgePaymentEventAgeMissingAlarm.Arn
+            - !GetAtt KafkaBridgePaymentEventConsecutiveEmptyWindowsAlarm.Arn
             - !Ref KafkaBridgeOnboardingQueueAlarmARN
             - !Ref KafkaBridgeOnboardingQueueAgeAlarmARN
             - !Ref KafkaBridgePaymentsQueueAlarmARN
